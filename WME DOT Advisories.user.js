@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.02
+// @version      1.03
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -83,9 +83,10 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
         new WazeWrap.Interface.Tab('DOT Advisories', $section.html(), initializeSettings);
     }
     //Build the State Layers
-    function buildDOTLayers(state) {
+    function buildDOTAdvLayers(state) {
         eval(state.substring(0,2) + 'DOTLayer = new OpenLayers.Layer.Markers(' + state.substring(0,2) + 'DOTLayer)');
         eval('W.map.addLayer(' + state.substring(0,2) + 'DOTLayer)');
+        eval(state.substring(0,2) + "DOTLayer.setZIndex(" + newZIndex + ")");
     }
     function getFeed(url,type,callback) {
         GM_xmlhttpRequest({
@@ -168,7 +169,6 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
             newMarker.link = link;
         }
         eval(state.substring(0,2) + "DOTLayer.addMarker(newMarker)");
-        eval(state.substring(0,2) + "DOTLayer.setZIndex(" + newZIndex + ")");
     }
     function popup(evt) {
         $("#gmPopupContainer").remove ();
@@ -234,21 +234,22 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
             settings[settingName] = this.checked;
             saveSettings();
             if(this.checked) {
-                buildDOTLayers(settingName.substring(0,2));
+                buildDOTAdvLayers(settingName.substring(0,2));
                 eval("get" + settingName.substring(0,2) + "DOT()");
             }
             else
             {
-                eval(settingName.substring(0,2) + "DOTLayer.destroy()");
+                //eval(settingName.substring(0,2) + "DOTLayer.destroy()");
+                eval('W.map.removeLayer(' + settingName.substring(0,2) + 'DOTLayer)');
             }
         });
         if (document.getElementById('WMEFUzoom') != null) {
-            newZIndex = document.getElementById('WMEFUzoom').style.zIndex - 10;
+            newZIndex = document.getElementById('WMEFUzoom').style.zIndex - 211;
         } else {
             newZIndex = 900;
         }
-        if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTLayers("DE"); getDEDOT();}
-        if (document.getElementById('chkPADOTEnabled').checked) { buildDOTLayers("PA"); getPADOT();}
+        if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT();}
+        if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT();}
     }
     //Set Checkbox from Settings
     function setChecked(checkboxId, checked) {
