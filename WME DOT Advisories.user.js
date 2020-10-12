@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.03
+// @version      1.04
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -48,6 +48,8 @@ const warning = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABze
 const DEAdvURL = 'https://tmc.deldot.gov/json/advisory.json';
 const DESchURL = 'https://deldot.gov/json/str.json';
 const PAURL = 'https://rehostjson.phuz.repl.co/PA';
+const NYURL = 'https://rehostjson.phuz.repl.co/NY';
+const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut Statewide'];
 
 (function() {
     'use strict';
@@ -60,7 +62,7 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
             if (!OpenLayers.Icon) {
                 installIcon();
             }
-            $(".overlay-button").click(function(){PADOTLayer.destroy(); DEDOTLayer.destroy(); initializeSettings()});
+            $(".overlay-button").click(function(){DEDOTLayer.destroy(); PADOTLayer.destroy(); NYDOTLayer.destroy(); initializeSettings()});
         } else if (tries < 1000) {
             setTimeout(function () {bootstrap(++tries);}, 200);
         }
@@ -71,11 +73,12 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
         var $section = $("<div>");
         $section.html([
             '<div id="chkEnables">',
+            '* The WME Refresh Button will fetch new advisory data.',
             '<table border=1 style="text-align:center;width:100%;padding:10px;">',
             '<tr><td colspan=2 style="text-align:center"><b>Enable</b></td><td style="text-align"><b>State</b></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>PA</td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>DE</td></tr>',
-            //'<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td></tr>',
+            '<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td></tr>',
             //'<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td></tr>',
             '</table>',
             '</div></div>'
@@ -129,22 +132,64 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
         getFeed(PAURL,"json", function(result) {
             var resultObj = JSON.parse(result.responseText);
             var i=0;
+            var icon;
             while (i<resultObj.length) {
-                var icon;
-                switch(resultObj[i].EventType) {
-                    case "roadwork":
-                        icon = "Roadwork";
-                        break;
-                    default:
-                        icon = "Incident";
-                }
                 if ((resultObj[i].LaneStatus == "closed") || (resultObj[i].LaneStatus == "ramp closure")) {
+                    switch(resultObj[i].EventType) {
+                        case "roadwork":
+                            icon = "Roadwork";
+                            break;
+                        default:
+                            icon = "Incident";
+                    }
                     drawMarkers("PA",resultObj[i].EventID,resultObj[i].Facility,resultObj[i].FromLocLatLong.split(",")[1],resultObj[i].FromLocLatLong.split(",")[0],icon,resultObj[i].Description,resultObj[i].LastUpdate,"");
                 }
                 i++;
             }
         })
     }
+    //Get the NY Event JSON Feed
+    function getNYDOT() {
+        getFeed(NYURL,"json", function(result) {
+            var resultObj = JSON.parse(result.responseText);
+            var i=0;
+            var icon;
+            while (i<resultObj.length) {
+                if (NotNY.includes(resultObj[i].RegionName) == false && resultObj[i].EventType != 'transitMode') { //skip anything not NY & transit notices
+                    if (resultObj[i].EventType == 'closures' || (resultObj[i].EventType != 'closures' && resultObj[i].LanesAffected == 'all lanes' && (resultObj[i].LanesStatus == 'closed' || resultObj[i].LanesStatus == "blocked"))) {
+                        switch(resultObj[i].EventType) {
+                            case "accidentsAndIncidents":
+                                icon = "Incident";
+                                break;
+                            case "roadwork":
+                                icon = "Roadwork";
+                                break;
+                            case "specialEvents":
+                                icon = "Incident";
+                                break;
+                            case "closures":
+                                icon = "Roadwork";
+                                break;
+                            case "transitMode":
+                                icon = "Roadwork";
+                                break;
+                            case "generalInfo":
+                                icon = "Roadwork";
+                                break;
+                            case "winterDrivingIndex":
+                                icon = "Roadwork";
+                                break;
+                            default:
+                                icon = "Incident";
+                        }
+                        drawMarkers("NY",resultObj[i].ID,"",resultObj[i].Longitude,resultObj[i].Latitude,icon,resultObj[i].Description,resultObj[i].LastUpdated,"");
+                    }
+                }
+                i++;
+            }
+        })
+    }
+
     //Generate the Camera markers
     function drawMarkers(state,id,title,x,y,icontype,desc,timestamp,link) {
         var size = new OpenLayers.Size(20,20);
@@ -207,6 +252,15 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
                               '</table>' +
                               '</div>'
                              ]);
+                break;
+            case "NY":
+                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 4;text-align: center">' +
+                              '<table border=0><tr><td>Updated: ' + this.timestamp.toLocaleString() + '<hr></td></tr>' +
+                              '<tr><td>' + this.desc + '</td></tr>' +
+                              '<tr><td><form><button id="gmCloseDlgBtn" type="button">Close</button></form></td></tr>' +
+                              '</table>' +
+                              '</div>'
+                             ]);
         }
 
         $("body").append(popupHTML);
@@ -250,6 +304,7 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
         }
         if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT();}
         if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT();}
+        if (document.getElementById('chkNYDOTEnabled').checked) { buildDOTAdvLayers("NY"); getNYDOT();}
     }
     //Set Checkbox from Settings
     function setChecked(checkboxId, checked) {
