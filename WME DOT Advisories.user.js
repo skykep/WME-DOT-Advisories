@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.01
+// @version      1.02
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -75,8 +75,8 @@ const PAURL = 'https://rehostjson.phuz.repl.co/PA';
             '<tr><td colspan=2 style="text-align:center"><b>Enable</b></td><td style="text-align"><b>State</b></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>PA</td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>DE</td></tr>',
-            '<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td></tr>',
-            '<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td></tr>',
+            //'<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td></tr>',
+            //'<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td></tr>',
             '</table>',
             '</div></div>'
         ].join(' '));
