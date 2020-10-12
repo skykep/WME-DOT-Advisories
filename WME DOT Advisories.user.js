@@ -155,7 +155,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             var i=0;
             var icon;
             while (i<resultObj.length) {
-                if (NotNY.includes(resultObj[i].RegionName) == false && resultObj[i].EventType != 'transitMode') { //skip anything not NY & transit notices
+                if (NotNY.includes(resultObj[i].RegionName) == false && resultObj[i].EventType != 'transitMode' && resultObj[i].EventSubType != 'Capacity related') { //skip anything not NY & transit notices & parking notices
                     if (resultObj[i].EventType == 'closures' || (resultObj[i].EventType != 'closures' && resultObj[i].LanesAffected == 'all lanes' && (resultObj[i].LanesStatus == 'closed' || resultObj[i].LanesStatus == "blocked"))) {
                         switch(resultObj[i].EventType) {
                             case "accidentsAndIncidents":
