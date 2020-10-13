@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.04
+// @version      1.05
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -16,7 +16,6 @@
 // @connect      deldot.gov
 // @connect      511ny.org
 // @connect      511nj.org
-// @connect      511pabot--kbaumgart.repl.co
 // @connect      rehostjson.phuz.repl.co
 /* global OpenLayers */
 /* global W */
@@ -30,6 +29,7 @@ let PADOTLayer;
 let DEDOTLayer;
 let NYDOTLayer;
 let NJDOTLayer;
+let WADOTLayer;
 var settings;
 var newZIndex;
 const DEIconC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2NTZCOTQ4MEMxM0FFNDExOTJCNzgxMEFBMkM5Q0QzRSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpGRjU0MDFBMUJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpGRjU0MDFBMEJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkYwRjVFQTIwMDlCQUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY1NkI5NDgwQzEzQUU0MTE5MkI3ODEwQUEyQzlDRDNFIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+iRjjNgAABVBJREFUeNqsVwlsVFUUPX+Z+Z1OoaWFSqFaU0hYBSSiCdYQhaRKNdFAUlRcMAFL1ABBESMouEYxwTSxRutWIkbBqKQEwxZoWKKGrcoiAqKsBStLO+1s/8/zvP+nzLTzZzpRX+a00+n999x391GEEOh5xOXTsM7+Amgq0px8ojT++wJxjgi6SsZiUIw8aEPuABTl2se6m6z560Z0rpoNJcdI/ngg8QAxlRhFFBNSIEC0ED8R3xIbiEhCWRjqwBHIW9zMi3gyE9M0+xW3UEovJBZAkIyKhEUvJRxVQNkCxaMNp+JH+fcBYhmxzlGldLtpL8TXDBjEHw3EFEQdT6qDxkAfUgG1ZDQUf6ETltN7YZ7YCfH3GZqpj6MB31F0BbGYOmLOLbInlq7cZLs1FIR243gYdy+FPoqe1rxAOADr1D5o46udvAj8heiPDQhvfovvWwGv7znbG8AcN+Wu2aNoHmnix12knomPwz+/CfqY+x1SntC65xF4ZZJNZj+TNwDeyc/CP2871ME3Mcq2h2YT87Imti4enUXv3GuT3vogfDM/5Q3yEgLBK4juXwtB82zipMpQS0bBX7Meav9yJpadY6/TrGE93Z3iatHW0iey+6OXZT6oxUOQU/1earlZURiVLzo3ZalAmHyTyFil3w3ImfE+OuuqZD35IWJLyTuzuxJam4xwU231lRqIK3MhIjvqxH85HR/cZ+tpW5gXsM4fHpTMk3Jj61hTpSwVtV8x9LHTUuPA7A6ufdpJIJWPR8PQym6BMXVZiqh3wiMwmxshOgJ+83hThXfgiDXurjYjitVyZKx8q8ly6VOcGv/fdyGy/RMnO2TYLL6Ob4O34kkofUu6yWplE1hy+Yi1X4V1cvftqKhZ45pcInTVJzovDXDidL1rjUWPbISSmwu1oAhqPlFYxBDS5mNNqdXh70/ZQrvZiFB7QYbkkhIxJV5TrsRG5RIYUxZ170Yxwfbqd6lL1UHc82mJFU9uWPH6A7YJ7RdSFUU6IIJXaZOW3DIdk9s7oRQMduLe9Rll6UVHty//YvobG3mWet3w/VbLyeGxlkN2d4KRqN/w98sR3vIub5fbs8AgwiHkPrEa+rjpCUecP8gkvGQ7Ryu9eU/GBqKPvKfRfqj1T5hHt8QVHOLE2oTogW/IEeWrsweCLOUIWP8wf9vG/n3KyQfZZEyORZ8vpA+dtCMz8eiqzWqfvq2yG0W2vuPcdP0SdLxdSWNO0HS6OWalgNMJ5uGNCLx5Fw38mo3gDKJ7v4KiK1AKy7aoJSP/yNi51KLyVs/46vrIzvoXzGO7EN70BnKmrYT3zvnJiZJporEiShH8fBZj3OYsE5pe2/NZ1+mklU+sFTvq5yiGURRuXGqXhLeiBtmeYMPDvD3DlOOTiwB9L7aix6ajpllX5Ebxmm2lpiP05VyEeAPb1RmOxfh2rLiNg+MLh5S0xCKpMct5bFtXRzwEVZsAbw4T5zNEDzZyHldBHzYZ6oChHPq5EJ2XETvXDPPQBibWdrJHu0jlWUnscWPItAjImSb9u1NWoVQmQm2I/LDKhqLzUZWJZkWYucIJoYcrmHaN9DCxPJ3y3rJlH/FMQlrnGPTZkCFwTDdY1z65cSQnX8D2FtDxb4kR30Tq3BfCrkmRcqSnmjMpVbNM1AXE1ixlXyJW9yaULbGM94zebsHzIfFqNgpVZH84+bmHAT+n+f/auIvxfxPLw8UZVS7kco9+DCkzK/1xLyc52S3YpZKGXH6NWU+MI+qJp+RMcO8qMae2syGWLVIbPIIj0Uhn8FlCLmTT498Y0t/UjLLZlKd8jflHgAEAjYU+RhKpTDQAAAAASUVORK5CYII=';
@@ -49,6 +49,7 @@ const DEAdvURL = 'https://tmc.deldot.gov/json/advisory.json';
 const DESchURL = 'https://deldot.gov/json/str.json';
 const PAURL = 'https://rehostjson.phuz.repl.co/PA';
 const NYURL = 'https://rehostjson.phuz.repl.co/NY';
+const WAURL = 'https://rehostjson.phuz.repl.co/WA';
 const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut Statewide'];
 
 (function() {
@@ -62,7 +63,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             if (!OpenLayers.Icon) {
                 installIcon();
             }
-            $(".overlay-button").click(function(){DEDOTLayer.destroy(); PADOTLayer.destroy(); NYDOTLayer.destroy(); initializeSettings()});
+            $(".overlay-button").click(function(){W.map.removeLayer("DEDOTLayer"); W.map.removeLayer("PADOTLayer"); W.map.removeLayer("NYDOTLayer"); W.map.removeLayer("WADOTLayer"); initializeSettings()});
         } else if (tries < 1000) {
             setTimeout(function () {bootstrap(++tries);}, 200);
         }
@@ -80,6 +81,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>DE</td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td></tr>',
             //'<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td></tr>',
+            '<tr><td colspan=2 align=center><input type="checkbox" id="chkWADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>WA</td></tr>',
             '</table>',
             '</div></div>'
         ].join(' '));
@@ -189,7 +191,35 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             }
         })
     }
-
+    //Get the WA Event JSON Feed
+    function getWADOT() {
+        getFeed(WAURL,"json", function(result) {
+            var resultObj = JSON.parse(result.responseText);
+            var i=0;
+            var icon;
+            while (i<resultObj.length) {
+                if (resultObj[i].EventCategory == 'Closure' || resultObj[i].EventCategory == 'Construction' || resultObj[i].EventCategory == 'Bridge') {
+                    switch(resultObj[i].EventCategory) {
+                        case "Construction":
+                            icon = "Roadwork";
+                            break;
+                        case "Closure":
+                            icon = "Roadwork";
+                            break;
+                        case "Collision":
+                            icon = "Incident";
+                            break;
+                        default:
+                            icon = "Incident";
+                    }
+                    var unixtime = parseInt(resultObj[i].LastUpdatedTime.replace("/Date(","").replace(")/","").split("-")[0]);
+                    let datetime = new Date(unixtime).toLocaleString();
+                    drawMarkers("WA",resultObj[i].AlertID,"",resultObj[i].StartRoadwayLocation.Longitude,resultObj[i].StartRoadwayLocation.Latitude,icon,resultObj[i].HeadlineDescription,datetime,"");
+                }
+                i++;
+            }
+        })
+    }
     //Generate the Camera markers
     function drawMarkers(state,id,title,x,y,icontype,desc,timestamp,link) {
         var size = new OpenLayers.Size(20,20);
@@ -254,6 +284,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
                              ]);
                 break;
             case "NY":
+            case "WA":
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 4;text-align: center">' +
                               '<table border=0><tr><td>Updated: ' + this.timestamp.toLocaleString() + '<hr></td></tr>' +
                               '<tr><td>' + this.desc + '</td></tr>' +
@@ -281,6 +312,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
         setChecked('chkDEDOTEnabled', settings.DEDOTEnabled);
         setChecked('chkNYDOTEnabled', settings.NYDOTEnabled);
         setChecked('chkNJDOTEnabled', settings.NJDOTEnabled);
+        setChecked('chkWADOTEnabled', settings.WADOTEnabled);
 
         //Add Handler for Checkbox Setting Changes
         $('.WMEDOTAdvSettingsCheckbox').change(function() {
@@ -298,13 +330,12 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             }
         });
         if (document.getElementById('WMEFUzoom') != null) {
-            newZIndex = document.getElementById('WMEFUzoom').style.zIndex - 211;
-        } else {
-            newZIndex = 900;
+            document.getElementById('WMEFUzoom').style.zIndex = "45000";
         }
         if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT();}
         if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT();}
         if (document.getElementById('chkNYDOTEnabled').checked) { buildDOTAdvLayers("NY"); getNYDOT();}
+        if (document.getElementById('chkWADOTEnabled').checked) { buildDOTAdvLayers("WA"); getWADOT();}
     }
     //Set Checkbox from Settings
     function setChecked(checkboxId, checked) {
@@ -331,6 +362,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
                 DEDOTEnabled: settings.DEDOTEnabled,
                 NYDOTEnabled: settings.NYDOTEnabled,
                 NJDOTEnabled: settings.NJDOTEnabled,
+                WADOTEnabled: settings.WADOTEnabled,
             };
             localStorage.setItem("WMEDOT_Settings", JSON.stringify(localsettings));
         }
