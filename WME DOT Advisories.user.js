@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.06
+// @version      1.07
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -52,19 +52,12 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
     function bootstrap(tries = 1) {
         if (W && W.loginManager && W.map && W.loginManager.user && W.model
             && W.model.states && W.model.states.getObjectArray().length && WazeWrap && WazeWrap.Ready) {
-            console.log("WME DOT Cameras Loaded!");
+            console.log("WME DOT Advisories Loaded!");
             init();
             if (!OpenLayers.Icon) {
                 installIcon();
             }
-            $(".overlay-button").click(function(){
-                W.map.removeLayer("DEDOTLayer");
-                W.map.removeLayer("NJDOTLayer");
-                W.map.removeLayer("NYDOTLayer");
-                W.map.removeLayer("PADOTLayer");
-                W.map.removeLayer("WADOTLayer");
-                initializeSettings()
-            });
+
         } else if (tries < 1000) {
             setTimeout(function () {bootstrap(++tries);}, 200);
         }
@@ -257,7 +250,7 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             }
         })
     }
-    //Generate the Camera markers
+    //Generate the Advisory markers
     function drawMarkers(state,id,title,x,y,icontype,desc,timestamp,link) {
         var size = new OpenLayers.Size(20,20);
         var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
@@ -290,22 +283,24 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
         switch(this.state) {
             case "DEAdv":
                 this.timestamp = new Date(this.timestamp);
-                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 4;text-align: center">' +
-                              '<table border=0><tr><td>Updated: ' + this.timestamp.toLocaleString() + '<hr></td></tr>' +
+                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
+                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
+                              'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
                               '<tr><td>' + this.desc + '</td></tr>' +
                               '<tr><td><a href="' + this.link + '" target="_blank">DelDot Link</a></td></tr>' +
-                              '<tr><td><form><button id="gmCloseDlgBtn" type="button">Close</button></form></td></tr>' +
                               '</table>' +
                               '</div>'
                              ]);
                 break;
             case "DESch":
-                popupHTML = (['<div id="gmPopupContainer" style="width:500px;margin: 4;text-align: center">' +
-                              '<table border=0><tr><td><h4>' + this.title.toString() + '</h4><hr></td></tr>' +
-                              '<tr><td>Period: ' + this.timestamp.replace(/ 12:00 AM/g,"") + '<hr></td></tr>' +
+                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
+                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
+                              '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
+                              '<tr><td>Period: ' + this.timestamp.replace(/ 12:00 AM/g,"") + '<hr class="myhrline"/></td></tr>' +
                               '<tr><td>' + this.desc + '</td></tr>' +
                               '<tr><td>' + this.link + 'DelDot Link</a></td></tr>' +
-                              '<tr><td><form><button id="gmCloseDlgBtn" type="button">Close</button></form></td></tr>' +
                               '</table>' +
                               '</div>'
                              ]);
@@ -313,20 +308,22 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             case "NJ":
             case "NY":
             case "PA":
-                popupHTML = (['<div id="gmPopupContainer" style="width:500px;margin: 4 auto;text-align: center">' +
-                              '<table border=0><tr><td><h4>' + this.title.toString() + '</h4><hr></td></tr>' +
-                              '<tr><td>Time: ' + new Date(this.timestamp).toLocaleString() + '<hr></td></tr>' +
+                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
+                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
+                              '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
+                              '<tr><td>Time: ' + new Date(this.timestamp).toLocaleString() + '<hr class="myhrline"/></td></tr>' +
                               '<tr><td>' + this.desc + '</td></tr>' +
-                              '<tr><td><form><button id="gmCloseDlgBtn" type="button">Close</button></form></td></tr>' +
                               '</table>' +
                               '</div>'
                              ]);
                 break;
             case "WA":
-                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 4;text-align: center">' +
-                              '<table border=0><tr><td>Updated: ' + this.timestamp.toLocaleString() + '<hr></td></tr>' +
+                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
+                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
+                              'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
                               '<tr><td>' + this.desc + '</td></tr>' +
-                              '<tr><td><form><button id="gmCloseDlgBtn" type="button">Close</button></form></td></tr>' +
                               '</table>' +
                               '</div>'
                              ]);
@@ -342,7 +339,52 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
             $("#gmPopupContainer").remove ();
             $("#gmPopupContainer").hide ();
         });
+        dragElement(document.getElementById("gmPopupContainer"));
     }
+
+    // Make the DIV element draggable:
+
+function dragElement(elmnt) {
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  if (document.getElementById("mydivheader")) {
+    // if present, the header is where you move the DIV from:
+    document.getElementById("mydivheader").onmousedown = dragMouseDown;
+  } else {
+    // otherwise, move the DIV from anywhere inside the DIV:
+    elmnt.onmousedown = dragMouseDown;
+  }
+
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // get the mouse cursor position at startup:
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    document.onmouseup = closeDragElement;
+    // call a function whenever the cursor moves:
+    document.onmousemove = elementDrag;
+  }
+
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
+    // calculate the new cursor position:
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
+    pos3 = e.clientX;
+    pos4 = e.clientY;
+    // set the element's new position:
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+  }
+
+  function closeDragElement() {
+    // stop moving when mouse button is released:
+    document.onmouseup = null;
+    document.onmousemove = null;
+  }
+}
+
     function initializeSettings()
     {
         loadSettings();
@@ -351,6 +393,14 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
         setChecked('chkNYDOTEnabled', settings.NYDOTEnabled);
         setChecked('chkNJDOTEnabled', settings.NJDOTEnabled);
         setChecked('chkWADOTEnabled', settings.WADOTEnabled);
+        $(".overlay-button").click(function(){
+            if (document.getElementById('chkDEDOTEnabled').checked) { eval('W.map.removeLayer(DEDOTLayer)'); }
+            if (document.getElementById('chkNJDOTEnabled').checked) { eval('W.map.removeLayer(NJDOTLayer)'); }
+            if (document.getElementById('chkNYDOTEnabled').checked) { eval('W.map.removeLayer(NYDOTLayer)'); }
+            if (document.getElementById('chkPADOTEnabled').checked) { eval('W.map.removeLayer(PADOTLayer)'); }
+            if (document.getElementById('chkWADOTEnabled').checked) { eval('W.map.removeLayer(WADOTLayer)'); }
+            initializeSettings();
+        });
 
         //Add Handler for Checkbox Setting Changes
         $('.WMEDOTAdvSettingsCheckbox').change(function() {
@@ -450,19 +500,50 @@ const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut St
     }
     //--- CSS styles make it work...
     GM_addStyle ("                                      \
+hr.myhrline{\
+margin: 5px;\
+}\
 #gmPopupContainer {                                     \
 position:               absolute;                        \
 background:             lightgray;                      \
-border:                 3px double black;               \
+border:                 1px double black;               \
 border-radius:          1ex;                            \
 z-index:                777;                            \
 display:                block; \
-}                                                       \
+}\
+#mydivheader {\
+cursor: move;\
+z-index: 10;\
+background-color: #2f2f2f;\
+}\
 #gmPopupContainer button{                               \
 cursor:                 pointer;                        \
 margin:                 1em 1em 0;                      \
 border:                 1px outset buttonface;          \
-}                                                       \
+}\                                                       \
+.modalclose {\
+background: lightgray;\
+color: #FFFFFF;\
+line-height: 25px;\
+position: absolute;\
+right: -12px;\
+text-align: center;\
+top: -10px;\
+width: 24px;\
+text-decoration: none;\
+font-weight: bold;\
+-webkit-border-radius: 12px;\
+-moz-border-radius: 12px;\
+border-radius: 12px;\
+-moz-box-shadow: 1px 1px 3px #000;\
+-webkit-box-shadow: 1px 1px 3px #000;\
+box-shadow: 1px 1px 3px #000;\
+text-decoration: none;\
+}\
+.modalclose:hover {\
+background: #00d9ff;\
+text-decoration: none;\
+}\
 ");
     bootstrap();
 })();
