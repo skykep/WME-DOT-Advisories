@@ -7,9 +7,9 @@
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
 // @require      http://cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js
-// @require      https://raw.githubusercontent.com/tristen/tablesort/gh-pages/dist/tablesort.min.js
-// @require      https://raw.githubusercontent.com/tristen/tablesort/gh-pages/dist/tablesort.number.min.js
-// @require      https://raw.githubusercontent.com/tristen/tablesort/gh-pages/dist/tablesort.date.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/tablesort.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.number.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/tablesort/5.2.1/sorts/tablesort.date.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
