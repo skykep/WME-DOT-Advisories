@@ -75,7 +75,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         var $section = $("<div>");
         $section.html([
             '<div id="chkEnables">',
-            '* The WME Refresh Button will fetch new advisory data.',
+            '<a href="https://www.waze.com/forum/viewtopic.php?f=819&t=308141" target="_blank">WME DOT Advisories</a> v' + GM_info.script.version + '<br>',
+            '* The WME Refresh Button will update reports.',
             '<table border=1 style="text-align:center;width:100%;padding:10px;">',
             '<tr><td colspan=2 style="text-align:center"><b>Enable</b></td><td style="text-align"><b>State</b></td><td width=30><b>Rpt</b></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>DE</td><td><div class=DOTreport data-report="report" id="DOTDEPopup"><img src=' + reportIcon + '></div></td></tr>',
