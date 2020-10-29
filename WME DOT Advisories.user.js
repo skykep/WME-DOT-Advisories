@@ -10,7 +10,7 @@
 // @require      https://raw.githubusercontent.com/tristen/tablesort/gh-pages/dist/tablesort.min.js
 // @require      https://raw.githubusercontent.com/tristen/tablesort/gh-pages/dist/tablesort.number.min.js
 // @require      https://raw.githubusercontent.com/tristen/tablesort/gh-pages/dist/tablesort.date.min.js
-// @require      https://momentjs.com/downloads/moment.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js
 // @grant        GM_xmlhttpRequest
 // @grant        GM_info
 // @grant        GM_fetch
