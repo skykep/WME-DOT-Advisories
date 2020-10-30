@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.10
+// @version      1.11
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -29,6 +29,7 @@
 /* global _ */
 // ==/UserScript==
 
+let AKDOTLayer;
 let DEDOTLayer;
 let LADOTLayer;
 let NJDOTLayer;
@@ -37,7 +38,7 @@ let PADOTLayer;
 let WADOTLayer;
 var settings;
 var newZIndex;
-const updateMessage = "";
+const updateMessage = "&#9658; Added Alaska, Louisiana<br>&#9658; Bug Fixes";
 const DEIconC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2NTZCOTQ4MEMxM0FFNDExOTJCNzgxMEFBMkM5Q0QzRSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpGRjU0MDFBMUJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpGRjU0MDFBMEJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkYwRjVFQTIwMDlCQUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY1NkI5NDgwQzEzQUU0MTE5MkI3ODEwQUEyQzlDRDNFIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+iRjjNgAABVBJREFUeNqsVwlsVFUUPX+Z+Z1OoaWFSqFaU0hYBSSiCdYQhaRKNdFAUlRcMAFL1ABBESMouEYxwTSxRutWIkbBqKQEwxZoWKKGrcoiAqKsBStLO+1s/8/zvP+nzLTzZzpRX+a00+n999x391GEEOh5xOXTsM7+Amgq0px8ojT++wJxjgi6SsZiUIw8aEPuABTl2se6m6z560Z0rpoNJcdI/ngg8QAxlRhFFBNSIEC0ED8R3xIbiEhCWRjqwBHIW9zMi3gyE9M0+xW3UEovJBZAkIyKhEUvJRxVQNkCxaMNp+JH+fcBYhmxzlGldLtpL8TXDBjEHw3EFEQdT6qDxkAfUgG1ZDQUf6ETltN7YZ7YCfH3GZqpj6MB31F0BbGYOmLOLbInlq7cZLs1FIR243gYdy+FPoqe1rxAOADr1D5o46udvAj8heiPDQhvfovvWwGv7znbG8AcN+Wu2aNoHmnix12knomPwz+/CfqY+x1SntC65xF4ZZJNZj+TNwDeyc/CP2871ME3Mcq2h2YT87Imti4enUXv3GuT3vogfDM/5Q3yEgLBK4juXwtB82zipMpQS0bBX7Meav9yJpadY6/TrGE93Z3iatHW0iey+6OXZT6oxUOQU/1earlZURiVLzo3ZalAmHyTyFil3w3ImfE+OuuqZD35IWJLyTuzuxJam4xwU231lRqIK3MhIjvqxH85HR/cZ+tpW5gXsM4fHpTMk3Jj61hTpSwVtV8x9LHTUuPA7A6ufdpJIJWPR8PQym6BMXVZiqh3wiMwmxshOgJ+83hThXfgiDXurjYjitVyZKx8q8ly6VOcGv/fdyGy/RMnO2TYLL6Ob4O34kkofUu6yWplE1hy+Yi1X4V1cvftqKhZ45pcInTVJzovDXDidL1rjUWPbISSmwu1oAhqPlFYxBDS5mNNqdXh70/ZQrvZiFB7QYbkkhIxJV5TrsRG5RIYUxZ170Yxwfbqd6lL1UHc82mJFU9uWPH6A7YJ7RdSFUU6IIJXaZOW3DIdk9s7oRQMduLe9Rll6UVHty//YvobG3mWet3w/VbLyeGxlkN2d4KRqN/w98sR3vIub5fbs8AgwiHkPrEa+rjpCUecP8gkvGQ7Ryu9eU/GBqKPvKfRfqj1T5hHt8QVHOLE2oTogW/IEeWrsweCLOUIWP8wf9vG/n3KyQfZZEyORZ8vpA+dtCMz8eiqzWqfvq2yG0W2vuPcdP0SdLxdSWNO0HS6OWalgNMJ5uGNCLx5Fw38mo3gDKJ7v4KiK1AKy7aoJSP/yNi51KLyVs/46vrIzvoXzGO7EN70BnKmrYT3zvnJiZJporEiShH8fBZj3OYsE5pe2/NZ1+mklU+sFTvq5yiGURRuXGqXhLeiBtmeYMPDvD3DlOOTiwB9L7aix6ajpllX5Ebxmm2lpiP05VyEeAPb1RmOxfh2rLiNg+MLh5S0xCKpMct5bFtXRzwEVZsAbw4T5zNEDzZyHldBHzYZ6oChHPq5EJ2XETvXDPPQBibWdrJHu0jlWUnscWPItAjImSb9u1NWoVQmQm2I/LDKhqLzUZWJZkWYucIJoYcrmHaN9DCxPJ3y3rJlH/FMQlrnGPTZkCFwTDdY1z65cSQnX8D2FtDxb4kR30Tq3BfCrkmRcqSnmjMpVbNM1AXE1ixlXyJW9yaULbGM94zebsHzIfFqNgpVZH84+bmHAT+n+f/auIvxfxPLw8UZVS7kco9+DCkzK/1xLyc52S3YpZKGXH6NWU+MI+qJp+RMcO8qMae2syGWLVIbPIIj0Uhn8FlCLmTT498Y0t/UjLLZlKd8jflHgAEAjYU+RhKpTDQAAAAASUVORK5CYII=';
 const DEIconSchRestriction = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowNTdDRTI5RjhFOENFNTExQkIwQkQ3QjFGMjA1NkNGMiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0MzMwRkNCMUJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MzMwRkNCMEJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjI4Q0M2MTJGNEVCOUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjA1N0NFMjlGOEU4Q0U1MTFCQjBCRDdCMUYyMDU2Q0YyIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YotOJgAABWdJREFUeNqcVwlsFFUY/nY7e7S0tPbQSkstUUu01NBWSzQKIjQaUbAxapAEj5g0KtEYRdEIeETjFYRglEDEIBgleIBnrGgjQY5C01SKFmrTi5ZSethjt7vt7o7fmzfb3ens0fqSL7Mz7/3/995/vX8tqqpCG2oA+LcRCPgAC+KNDCJZ/z0MW0o/rLbYEhYrkJgtn+J1gnh8CNhXBLguAFaTmINYSiwjridyiCR9zgXF2QmLcoK/vyd+I8YM0oLCMRO4pwZwZmqfFMOsfxTweScTP0QLrOV0Ifx8ExAWSdBn/UiD6s3hexnxJL/8SbxDfGYgVr3SqvoIIxbarPIhTX0psZ1YAZ+cQnYJMOs2IItPJZFu4S58LqCHJ+n8FehtFLLXcQN7uLqCqCT6pHpSWSyRiA0jj/iBO52nkeYtAkpepoGXTOwK395CUg/N9wdw9WpugtZt+w6ofR3orgfsuJerrtTd0zWZwBqBNIXYr5EKy9z4GnB3NUmXhkhPchOth4FzJ4Fjz+ma7MAcclUcAeY/zpjRvs4nvg6Lh5jEbxPFmi8XbuFJ18MQ5kNNQP37MtycRMM2oL8+NJ9Ajps/ZAg+GyRfQLwRj7iYHJWaQNFjQOFT5m0dfx5wu4HyvTzdMRltR58xr1vwHi1QDs1VwBqiMAqxRTh/DfVYMZNxVfaWWVlnFdC0X/gPSJ8HZJby5PRMC13R8qV5/U2budYholqh7ifCLRci9vYnM5fv0ExcwGBxZBiViOAJ+lOkxxjzfnxYFhyhpWadjPDwkXYtcMWd8tR+7zL43E4z8cDpAnjcsyAKUP4K8+7/+gg4f0rmgQg6Ty/JB6nULb9dbAZObTLLzamQB/W68zDcfJWZ2N2Vq+0skRUmtcAoPNot00QJKwieHoIp6tMrn9hw3bvASKtRNp3V0GYRoWDByLkcM7Ewg9BhI7Et2Shcu4EVuS9UrVT9xN5+efqgplGavuZFo6w9jRu2Sxm/22EmtqeOaCYRvgz4QoK9LMGnd8qAUsPKTgcD7ewu42bEqc9+QZdUG2MjePHY00bMxDNy26lQhYencHeHBEVA+f1m3xU9DZRuCEZtGJGQWctv+uZH2hmElFcsPiTPbjcTp81thsPRDg8FLhyW3/5hnW87FLmw9taxNLJcBgLGa1Ss7aoFGnfoKVgto1qxNSE5v9VM7MgYReo1P2m7b9rNxcJfL0il6iSIb0c3AlWP0hrj5nmhtfZVEbDM733yPb3oG8aOz0ycwNumdP02+iyAjt9Ziw/IPLQ5IyORSIoypxAZxfLUvU2CxY3SV3ZogRvxdkq6vJ7EuxBQH8Hxl4C7fuEKLg54p9KVhNVDEg+dAX5cLoMvgE1IcBjyzEgsAkLFOn4tx2BHLqru56XGpiIlH9MaffT/wVVMtyHBUEfiN0N5F/126iH5aqaGDxfZTHzFy6X586kRBujvhq28VBcy7zsFaT91rRIZPnlptEagmgKVJP8YrvPAzw/yPuZVN/dhdiC3ss2bLe9frfWhzuEW5jXdcuYTZkS91KrAQx0P8NffkQiUGPvfScEU2mSzZpdOcfETTvpvBiuf4xIZwqKCuXg6r35ZyGZzjFMr+TwYTbkSx3hb9PZu68RK0e4MNIfSKohQdyvMKkgPxIy/KXjuA63TDPYTwQ5T0Z9WQ4MyQCyPRzpVYjE+1bvGwRhrOojbo5pX/X/E0LpONjxEm2nGjwbmwBLihFYeI0H1x/CxGpdc/FtYTIg+p0S/FA6hbON9yCzuiSol9GbdECu41Ml5Hmm06H9n9opbmaddiZzFLmQvmlaNCf13kn0Xb5wjUy2PNm2nKg15GYuMM2taxP8JMAC5wMrd7FP1/wAAAABJRU5ErkJggg==';
 const DEIconSchClosure = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAoCAYAAADpE0oSAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTYxOTU5RkJGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTYxOTU5RkNGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFNjE5NTlGOUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFNjE5NTlGQUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PuSU594AAAfTSURBVHja5Fh7cJTV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';
@@ -45,6 +46,7 @@ const Incident = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABz
 const Roadwork = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA/VpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ1dWlkOjVEMjA4OTI0OTNCRkRCMTE5MTRBODU5MEQzMTUwOEM4IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkUzRjQ0OTg5NzIzOTExRTM4ODlCRkYwNDVGNDI0RjlEIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkUzRjQ0OTg4NzIzOTExRTM4ODlCRkYwNDVGNDI0RjlEIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIElsbHVzdHJhdG9yIENDIChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmFkOTA4NmJkLTAzMGEtNDA0MS04ZTdiLWJhZGYwNWRmZDMzZiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDplNDcyMTVk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';
 const PLIcon = 'data:image/gif;base64,R0lGODlhFgAUANUAAOHh4t7e34iKj0dLU0VJUUhMVEpOVk1RWU9TW2xvdXF0enx/hZOVmcbHyVJWXVFVXFRYX1dbYl5iaTtASD5DSz1CSj9ETEFGTkNIUEVKUn6BhoSHjFpeZGBkamVpb2RobmpudGltc2ZqcG1xd2tvdaqsr0ZLUklOVU9UW3h8gdHS08nKy////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAACwALAAAAAAWABQAAAZrQJZwSCwaj8ikcskkmTpMI2JSmUxSUaFjIhJCJlkhiHjJMD2YUDECVqKsVuJk4OYGSqeDcEJRTkUACgkrKgx8SgsTH0IcExgeh0oFbUICFo5MBpRCDVkbEyNDEw9hbAYSkWEaVQRhrq+wTEEAOw==';
 const reportIcon = 'data:image/gif;base64,R0lGODlhFAAUALMAANcsLNgvL9g4OAMBAc5RUcZVVW1tbQAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAgALAAAAAAUABQAAARdEKFDqz0y6zO695S2FUBpAkNliBNxmmnFHu6LXmtG2+iXbjWeiYDRuXw2IhAg+CSLkp1wCG31fB6A0jilLrva6g7r3EaDU7MVEGi72yX1mNwJj8CAgpiOFV/+FhIRADs=';
+const AKURL = 'https://rehostjson.phuz.repl.co/AK';
 const DEAdvURL = 'https://tmc.deldot.gov/json/advisory.json';
 const DESchURL = 'https://deldot.gov/json/str.json';
 const LAURL = 'https://rehostjson.phuz.repl.co/LA';
@@ -82,6 +84,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '* The WME Refresh Button will update reports.',
             '<table border=1 style="text-align:center;width:100%;padding:10px;">',
             '<tr><td colspan=2 style="text-align:center"><b>Enable</b></td><td style="text-align"><b>State</b></td><td width=30><b>Rpt</b></td></tr>',
+            '<tr><td colspan=2 align=center><input type="checkbox" id="chkAKDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>AK</td><td><div class=DOTreport data-report="report" id="DOTAKPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>DE</td><td><div class=DOTreport data-report="report" id="DOTDEPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkLADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>LA</td><td><div class=DOTreport data-report="report" id="DOTLAPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td><td><div class=DOTreport data-report="report" id="DOTNJPopup"><img src=' + reportIcon + '></div></td></tr>',
@@ -112,6 +115,46 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 callback(result);
             }
         });
+    }
+    //Get the AK Event JSON Feed
+    function getAKDOT(type) {
+        getFeed(AKURL, function(result) {
+            var resultObj = JSON.parse(result.responseText);
+            var i=0;
+            var icon;
+            while (i<resultObj.length) {
+                if ((resultObj[i].LanesAffected).replace(/ +(?= )/g,'') == ("All Lanes Closed")) {
+                    switch(resultObj[i].EventType) {
+                        case "closures":
+                            icon = "Incident";
+                            break;
+                        case "roadwork":
+                            icon = "Roadwork";
+                            break;
+                        default:
+                            icon = "Incident";
+                    }
+                    if (type == "report") {
+                        let table = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
+                        var row = table.insertRow(-1);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        cell1.innerHTML = '<div class="gotoPL" data-lat="' + resultObj[i].Latitude + '" data-lon="' + resultObj[i].Longitude + '"><img src=' + PLIcon + '></div>';
+                        cell2.innerHTML = resultObj[i].Description;
+                        cell3.innerHTML = resultObj[i].RoadwayName;
+                        cell4.innerHTML = moment(new Date(resultObj[i].LastUpdated * 1000)).format('LLL');
+                    } else {
+                        drawMarkers("AK",resultObj[i].ID,"",resultObj[i].Longitude,resultObj[i].Latitude,icon,resultObj[i].Description,resultObj[i].LastUpdated,"");
+                    }
+                }
+                i++;
+            }
+            if (type == "report") {
+                reportWorker();
+            }
+        })
     }
     function getDEDOT() {
         getDEDOTAdv();
@@ -439,6 +482,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     function getReportData(id) {
         switch(id) {
+            case "DOTAKPopup":
+                popupdetails("Alaska");
+                getAKDOT("report");
+                break;
             case "DOTDEPopup":
                 popupdetails("Delaware");
                 getDEDOTAdv("report");
@@ -519,7 +566,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                               '</div>'
                              ]);
                 break;
-            case "LA":
             case "NJ":
             case "NY":
             case "PA":
@@ -533,6 +579,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                               '</div>'
                              ]);
                 break;
+            case "AK":
+            case "LA":
             case "WA":
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
                               '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
@@ -635,7 +683,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             document.getElementsByClassName("DOTreport")[i].addEventListener('click', function(e) {getReportData(this.getAttribute("id"));}, false);
         }
         loadSettings();
-
+        setChecked('chkAKDOTEnabled', settings.AKDOTEnabled);
         setChecked('chkDEDOTEnabled', settings.DEDOTEnabled);
         setChecked('chkLADOTEnabled', settings.LADOTEnabled);
         setChecked('chkNJDOTEnabled', settings.NJDOTEnabled);
@@ -643,6 +691,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         setChecked('chkPADOTEnabled', settings.PADOTEnabled);
         setChecked('chkWADOTEnabled', settings.WADOTEnabled);
         $(".overlay-button").click(function(){
+            if (document.getElementById('chkAKDOTEnabled').checked) { eval('W.map.removeLayer(AKDOTLayer)'); }
             if (document.getElementById('chkDEDOTEnabled').checked) { eval('W.map.removeLayer(DEDOTLayer)'); }
             if (document.getElementById('chkLADOTEnabled').checked) { eval('W.map.removeLayer(LADOTLayer)'); }
             if (document.getElementById('chkNJDOTEnabled').checked) { eval('W.map.removeLayer(NJDOTLayer)'); }
@@ -670,6 +719,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         if (document.getElementById('WMEFUzoom') != null) {
             document.getElementById('WMEFUzoom').style.zIndex = "45000";
         }
+        if (document.getElementById('chkAKDOTEnabled').checked) { buildDOTAdvLayers("AK"); getAKDOT();}
         if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT();}
         if (document.getElementById('chkLADOTEnabled').checked) { buildDOTAdvLayers("LA"); getLADOT();}
         if (document.getElementById('chkNJDOTEnabled').checked) { buildDOTAdvLayers("NJ"); getNJDOT();}
@@ -698,6 +748,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     function saveSettings() {
         if (localStorage) {
             var localsettings = {
+                AKDOTEnabled: settings.AKDOTEnabled,
                 DEDOTEnabled: settings.DEDOTEnabled,
                 LADOTEnabled: settings.LADOTEnabled,
                 NJDOTEnabled: settings.NJDOTEnabled,
