@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.09
+// @version      1.10
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -30,6 +30,7 @@
 // ==/UserScript==
 
 let DEDOTLayer;
+let LADOTLayer;
 let NJDOTLayer;
 let NYDOTLayer;
 let PADOTLayer;
@@ -46,6 +47,7 @@ const PLIcon = 'data:image/gif;base64,R0lGODlhFgAUANUAAOHh4t7e34iKj0dLU0VJUUhMVE
 const reportIcon = 'data:image/gif;base64,R0lGODlhFAAUALMAANcsLNgvL9g4OAMBAc5RUcZVVW1tbQAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAgALAAAAAAUABQAAARdEKFDqz0y6zO695S2FUBpAkNliBNxmmnFHu6LXmtG2+iXbjWeiYDRuXw2IhAg+CSLkp1wCG31fB6A0jilLrva6g7r3EaDU7MVEGi72yX1mNwJj8CAgpiOFV/+FhIRADs=';
 const DEAdvURL = 'https://tmc.deldot.gov/json/advisory.json';
 const DESchURL = 'https://deldot.gov/json/str.json';
+const LAURL = 'https://rehostjson.phuz.repl.co/LA';
 const NJURLList = 'https://511nj.org/API/client/Map/getEventData';
 const NJURLDetail = 'https://511nj.org/API/client/Map/getEventPopupData?EventId=';
 const NYURL = 'https://rehostjson.phuz.repl.co/NY';
@@ -81,6 +83,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<table border=1 style="text-align:center;width:100%;padding:10px;">',
             '<tr><td colspan=2 style="text-align:center"><b>Enable</b></td><td style="text-align"><b>State</b></td><td width=30><b>Rpt</b></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>DE</td><td><div class=DOTreport data-report="report" id="DOTDEPopup"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td colspan=2 align=center><input type="checkbox" id="chkLADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>LA</td><td><div class=DOTreport data-report="report" id="DOTLAPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td><td><div class=DOTreport data-report="report" id="DOTNJPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td><td><div class=DOTreport data-report="report" id="DOTNYPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>PA</td><td><div class=DOTreport data-report="report" id="DOTPAPopup"><img src=' + reportIcon + '></div></td></tr>',
@@ -158,6 +161,46 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell4.innerHTML = moment(new Date(resultObj[i].str.actualStartDate)).format('LLL');
                     } else {
                         drawMarkers("DESch",resultObj[i].str.strId,resultObj[i].str.title,resultObj[i].str.longitude,resultObj[i].str.latitude,"DEIconSch" + resultObj[i].str.impactType,resultObj[i].str.construction,resultObj[i].str.startDate,resultObj[i].str.releaseId);
+                    }
+                }
+                i++;
+            }
+            if (type == "report") {
+                reportWorker();
+            }
+        })
+    }
+    //Get the LA Event JSON Feed
+    function getLADOT(type) {
+        getFeed(LAURL, function(result) {
+            var resultObj = JSON.parse(result.responseText);
+            var i=0;
+            var icon;
+            while (i<resultObj.length) {
+                if ((resultObj[i].LanesAffected).replace(/ +(?= )/g,'') == ("All Lanes Closed")) {
+                    switch(resultObj[i].EventType) {
+                        case "closures":
+                            icon = "Incident";
+                            break;
+                        case "roadwork":
+                            icon = "Roadwork";
+                            break;
+                        default:
+                            icon = "Incident";
+                    }
+                    if (type == "report") {
+                        let table = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
+                        var row = table.insertRow(-1);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        cell1.innerHTML = '<div class="gotoPL" data-lat="' + resultObj[i].Latitude + '" data-lon="' + resultObj[i].Longitude + '"><img src=' + PLIcon + '></div>';
+                        cell2.innerHTML = resultObj[i].Description;
+                        cell3.innerHTML = resultObj[i].RoadwayName;
+                        cell4.innerHTML = moment(new Date(resultObj[i].LastUpdated * 1000)).format('LLL');
+                    } else {
+                        drawMarkers("LA",resultObj[i].ID,"",resultObj[i].Longitude,resultObj[i].Latitude,icon,resultObj[i].Description,resultObj[i].LastUpdated,"");
                     }
                 }
                 i++;
@@ -400,6 +443,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 popupdetails("Delaware");
                 getDEDOTAdv("report");
                 break;
+            case "DOTLAPopup":
+                popupdetails("Louisiana");
+                getLADOT("report");
+                break;
             case "DOTNJPopup":
                 popupdetails("New Jersey");
                 getNJDOT("report");
@@ -415,7 +462,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             case "DOTWAPopup":
                 popupdetails("Washington");
                 getWADOT("report");
-                break;
         }
     }
     //Generate the Advisory markers
@@ -473,6 +519,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                               '</div>'
                              ]);
                 break;
+            case "LA":
             case "NJ":
             case "NY":
             case "PA":
@@ -588,13 +635,16 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             document.getElementsByClassName("DOTreport")[i].addEventListener('click', function(e) {getReportData(this.getAttribute("id"));}, false);
         }
         loadSettings();
-        setChecked('chkPADOTEnabled', settings.PADOTEnabled);
+
         setChecked('chkDEDOTEnabled', settings.DEDOTEnabled);
-        setChecked('chkNYDOTEnabled', settings.NYDOTEnabled);
+        setChecked('chkLADOTEnabled', settings.LADOTEnabled);
         setChecked('chkNJDOTEnabled', settings.NJDOTEnabled);
+        setChecked('chkNYDOTEnabled', settings.NYDOTEnabled);
+        setChecked('chkPADOTEnabled', settings.PADOTEnabled);
         setChecked('chkWADOTEnabled', settings.WADOTEnabled);
         $(".overlay-button").click(function(){
             if (document.getElementById('chkDEDOTEnabled').checked) { eval('W.map.removeLayer(DEDOTLayer)'); }
+            if (document.getElementById('chkLADOTEnabled').checked) { eval('W.map.removeLayer(LADOTLayer)'); }
             if (document.getElementById('chkNJDOTEnabled').checked) { eval('W.map.removeLayer(NJDOTLayer)'); }
             if (document.getElementById('chkNYDOTEnabled').checked) { eval('W.map.removeLayer(NYDOTLayer)'); }
             if (document.getElementById('chkPADOTEnabled').checked) { eval('W.map.removeLayer(PADOTLayer)'); }
@@ -621,6 +671,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             document.getElementById('WMEFUzoom').style.zIndex = "45000";
         }
         if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT();}
+        if (document.getElementById('chkLADOTEnabled').checked) { buildDOTAdvLayers("LA"); getLADOT();}
         if (document.getElementById('chkNJDOTEnabled').checked) { buildDOTAdvLayers("NJ"); getNJDOT();}
         if (document.getElementById('chkNYDOTEnabled').checked) { buildDOTAdvLayers("NY"); getNYDOT();}
         if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT();}
@@ -647,10 +698,11 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     function saveSettings() {
         if (localStorage) {
             var localsettings = {
-                PADOTEnabled: settings.PADOTEnabled,
                 DEDOTEnabled: settings.DEDOTEnabled,
-                NYDOTEnabled: settings.NYDOTEnabled,
+                LADOTEnabled: settings.LADOTEnabled,
                 NJDOTEnabled: settings.NJDOTEnabled,
+                NYDOTEnabled: settings.NYDOTEnabled,
+                PADOTEnabled: settings.PADOTEnabled,
                 WADOTEnabled: settings.WADOTEnabled,
             };
             localStorage.setItem("WMEDOT_Settings", JSON.stringify(localsettings));
