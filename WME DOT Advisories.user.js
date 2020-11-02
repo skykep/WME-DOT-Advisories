@@ -37,7 +37,6 @@ let NYDOTLayer;
 let PADOTLayer;
 let WADOTLayer;
 var settings;
-var newZIndex;
 const updateMessage = "&#9658; Added Alaska, Louisiana<br>&#9658; Bug Fixes";
 const DEIconC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2NTZCOTQ4MEMxM0FFNDExOTJCNzgxMEFBMkM5Q0QzRSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpGRjU0MDFBMUJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpGRjU0MDFBMEJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkYwRjVFQTIwMDlCQUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY1NkI5NDgwQzEzQUU0MTE5MkI3ODEwQUEyQzlDRDNFIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+iRjjNgAABVBJREFUeNqsVwlsVFUUPX+Z+Z1OoaWFSqFaU0hYBSSiCdYQhaRKNdFAUlRcMAFL1ABBESMouEYxwTSxRutWIkbBqKQEwxZoWKKGrcoiAqKsBStLO+1s/8/zvP+nzLTzZzpRX+a00+n999x391GEEOh5xOXTsM7+Amgq0px8ojT++wJxjgi6SsZiUIw8aEPuABTl2se6m6z560Z0rpoNJcdI/ngg8QAxlRhFFBNSIEC0ED8R3xIbiEhCWRjqwBHIW9zMi3gyE9M0+xW3UEovJBZAkIyKhEUvJRxVQNkCxaMNp+JH+fcBYhmxzlGldLtpL8TXDBjEHw3EFEQdT6qDxkAfUgG1ZDQUf6ETltN7YZ7YCfH3GZqpj6MB31F0BbGYOmLOLbInlq7cZLs1FIR243gYdy+FPoqe1rxAOADr1D5o46udvAj8heiPDQhvfovvWwGv7znbG8AcN+Wu2aNoHmnix12knomPwz+/CfqY+x1SntC65xF4ZZJNZj+TNwDeyc/CP2871ME3Mcq2h2YT87Imti4enUXv3GuT3vogfDM/5Q3yEgLBK4juXwtB82zipMpQS0bBX7Meav9yJpadY6/TrGE93Z3iatHW0iey+6OXZT6oxUOQU/1earlZURiVLzo3ZalAmHyTyFil3w3ImfE+OuuqZD35IWJLyTuzuxJam4xwU231lRqIK3MhIjvqxH85HR/cZ+tpW5gXsM4fHpTMk3Jj61hTpSwVtV8x9LHTUuPA7A6ufdpJIJWPR8PQym6BMXVZiqh3wiMwmxshOgJ+83hThXfgiDXurjYjitVyZKx8q8ly6VOcGv/fdyGy/RMnO2TYLL6Ob4O34kkofUu6yWplE1hy+Yi1X4V1cvftqKhZ45pcInTVJzovDXDidL1rjUWPbISSmwu1oAhqPlFYxBDS5mNNqdXh70/ZQrvZiFB7QYbkkhIxJV5TrsRG5RIYUxZ170Yxwfbqd6lL1UHc82mJFU9uWPH6A7YJ7RdSFUU6IIJXaZOW3DIdk9s7oRQMduLe9Rll6UVHty//YvobG3mWet3w/VbLyeGxlkN2d4KRqN/w98sR3vIub5fbs8AgwiHkPrEa+rjpCUecP8gkvGQ7Ryu9eU/GBqKPvKfRfqj1T5hHt8QVHOLE2oTogW/IEeWrsweCLOUIWP8wf9vG/n3KyQfZZEyORZ8vpA+dtCMz8eiqzWqfvq2yG0W2vuPcdP0SdLxdSWNO0HS6OWalgNMJ5uGNCLx5Fw38mo3gDKJ7v4KiK1AKy7aoJSP/yNi51KLyVs/46vrIzvoXzGO7EN70BnKmrYT3zvnJiZJporEiShH8fBZj3OYsE5pe2/NZ1+mklU+sFTvq5yiGURRuXGqXhLeiBtmeYMPDvD3DlOOTiwB9L7aix6ajpllX5Ebxmm2lpiP05VyEeAPb1RmOxfh2rLiNg+MLh5S0xCKpMct5bFtXRzwEVZsAbw4T5zNEDzZyHldBHzYZ6oChHPq5EJ2XETvXDPPQBibWdrJHu0jlWUnscWPItAjImSb9u1NWoVQmQm2I/LDKhqLzUZWJZkWYucIJoYcrmHaN9DCxPJ3y3rJlH/FMQlrnGPTZkCFwTDdY1z65cSQnX8D2FtDxb4kR30Tq3BfCrkmRcqSnmjMpVbNM1AXE1ixlXyJW9yaULbGM94zebsHzIfFqNgpVZH84+bmHAT+n+f/auIvxfxPLw8UZVS7kco9+DCkzK/1xLyc52S3YpZKGXH6NWU+MI+qJp+RMcO8qMae2syGWLVIbPIIj0Uhn8FlCLmTT498Y0t/UjLLZlKd8jflHgAEAjYU+RhKpTDQAAAAASUVORK5CYII=';
 const DEIconSchRestriction = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowNTdDRTI5RjhFOENFNTExQkIwQkQ3QjFGMjA1NkNGMiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0MzMwRkNCMUJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MzMwRkNCMEJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjI4Q0M2MTJGNEVCOUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjA1N0NFMjlGOEU4Q0U1MTFCQjBCRDdCMUYyMDU2Q0YyIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YotOJgAABWdJREFUeNqcVwlsFFUY/nY7e7S0tPbQSkstUUu01NBWSzQKIjQaUbAxapAEj5g0KtEYRdEIeETjFYRglEDEIBgleIBnrGgjQY5C01SKFmrTi5ZSethjt7vt7o7fmzfb3ens0fqSL7Mz7/3/995/vX8tqqpCG2oA+LcRCPgAC+KNDCJZ/z0MW0o/rLbYEhYrkJgtn+J1gnh8CNhXBLguAFaTmINYSiwjridyiCR9zgXF2QmLcoK/vyd+I8YM0oLCMRO4pwZwZmqfFMOsfxTweScTP0QLrOV0Ifx8ExAWSdBn/UiD6s3hexnxJL/8SbxDfGYgVr3SqvoIIxbarPIhTX0psZ1YAZ+cQnYJMOs2IItPJZFu4S58LqCHJ+n8FehtFLLXcQN7uLqCqCT6pHpSWSyRiA0jj/iBO52nkeYtAkpepoGXTOwK395CUg/N9wdw9WpugtZt+w6ofR3orgfsuJerrtTd0zWZwBqBNIXYr5EKy9z4GnB3NUmXhkhPchOth4FzJ4Fjz+ma7MAcclUcAeY/zpjRvs4nvg6Lh5jEbxPFmi8XbuFJ18MQ5kNNQP37MtycRMM2oL8+NJ9Ajps/ZAg+GyRfQLwRj7iYHJWaQNFjQOFT5m0dfx5wu4HyvTzdMRltR58xr1vwHi1QDs1VwBqiMAqxRTh/DfVYMZNxVfaWWVlnFdC0X/gPSJ8HZJby5PRMC13R8qV5/U2budYholqh7ifCLRci9vYnM5fv0ExcwGBxZBiViOAJ+lOkxxjzfnxYFhyhpWadjPDwkXYtcMWd8tR+7zL43E4z8cDpAnjcsyAKUP4K8+7/+gg4f0rmgQg6Ty/JB6nULb9dbAZObTLLzamQB/W68zDcfJWZ2N2Vq+0skRUmtcAoPNot00QJKwieHoIp6tMrn9hw3bvASKtRNp3V0GYRoWDByLkcM7Ewg9BhI7Et2Shcu4EVuS9UrVT9xN5+efqgplGavuZFo6w9jRu2Sxm/22EmtqeOaCYRvgz4QoK9LMGnd8qAUsPKTgcD7ewu42bEqc9+QZdUG2MjePHY00bMxDNy26lQhYencHeHBEVA+f1m3xU9DZRuCEZtGJGQWctv+uZH2hmElFcsPiTPbjcTp81thsPRDg8FLhyW3/5hnW87FLmw9taxNLJcBgLGa1Ss7aoFGnfoKVgto1qxNSE5v9VM7MgYReo1P2m7b9rNxcJfL0il6iSIb0c3AlWP0hrj5nmhtfZVEbDM733yPb3oG8aOz0ycwNumdP02+iyAjt9Ziw/IPLQ5IyORSIoypxAZxfLUvU2CxY3SV3ZogRvxdkq6vJ7EuxBQH8Hxl4C7fuEKLg54p9KVhNVDEg+dAX5cLoMvgE1IcBjyzEgsAkLFOn4tx2BHLqru56XGpiIlH9MaffT/wVVMtyHBUEfiN0N5F/126iH5aqaGDxfZTHzFy6X586kRBujvhq28VBcy7zsFaT91rRIZPnlptEagmgKVJP8YrvPAzw/yPuZVN/dhdiC3ss2bLe9frfWhzuEW5jXdcuYTZkS91KrAQx0P8NffkQiUGPvfScEU2mSzZpdOcfETTvpvBiuf4xIZwqKCuXg6r35ZyGZzjFMr+TwYTbkSx3hb9PZu68RK0e4MNIfSKohQdyvMKkgPxIy/KXjuA63TDPYTwQ5T0Z9WQ4MyQCyPRzpVYjE+1bvGwRhrOojbo5pX/X/E0LpONjxEm2nGjwbmwBLihFYeI0H1x/CxGpdc/FtYTIg+p0S/FA6hbON9yCzuiSol9GbdECu41Ml5Hmm06H9n9opbmaddiZzFLmQvmlaNCf13kn0Xb5wjUy2PNm2nKg15GYuMM2taxP8JMAC5wMrd7FP1/wAAAABJRU5ErkJggg==';
@@ -58,7 +57,7 @@ const WAURL = 'https://rehostjson.phuz.repl.co/WA';
 const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut Statewide'];
 const NJConstruction = ['Construction', 'ScheduledConstruction'];
 
-(function() {
+(function () {
     'use strict';
     //Bootstrap
     function bootstrap(tries = 1) {
@@ -71,12 +70,11 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             }
 
         } else if (tries < 1000) {
-            setTimeout(function () {bootstrap(++tries);}, 200);
+            setTimeout(function () { bootstrap(++tries); }, 200);
         }
     }
     //Build the Tab and Settings Division
-    function init()
-    {
+    function init() {
         var $section = $("<div>");
         $section.html([
             '<div id="chkEnables">',
@@ -97,20 +95,20 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         new WazeWrap.Interface.Tab('DOT Advisories', $section.html(), initializeSettings);
         WazeWrap.Interface.ShowScriptUpdate("WME DOT Advisories", GM_info.script.version, updateMessage, "https://greasyfork.org/en/scripts/412976-wme-dot-advisories", "https://www.waze.com/forum/viewtopic.php?f=819&t=308141");
     }
-    getFeed("https://rehostjson.phuz.repl.co/public/CSS", function(result) {
+    getFeed("https://rehostjson.phuz.repl.co/public/CSS", function (result) {
         GM_addStyle(result.responseText);
     })
     //Build the State Layers
     function buildDOTAdvLayers(state) {
         eval(state.substring(0,2) + 'DOTLayer = new OpenLayers.Layer.Markers(' + state.substring(0,2) + 'DOTLayer)');
-        eval('W.map.addLayer(' + state.substring(0,2) + 'DOTLayer)');
-        eval(state.substring(0,2) + "DOTLayer.setZIndex(" + newZIndex + ")");
+        W.map.addLayer(eval(state.substring(0,2) + 'DOTLayer'));
+        W.map.getOLMap().setLayerIndex(eval(state.substring(0,2) + 'DOTLayer'), 0);
     }
-    function getFeed(url,callback) {
+    function getFeed(url, callback) {
         GM_xmlhttpRequest({
             method: "GET",
             url: url,
-            onload: function(response) {
+            onload: function (response) {
                 var result = response;
                 callback(result);
             }
@@ -118,13 +116,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the AK Event JSON Feed
     function getAKDOT(type) {
-        getFeed(AKURL, function(result) {
+        getFeed(AKURL, function (result) {
             var resultObj = JSON.parse(result.responseText);
-            var i=0;
+            var i = 0;
             var icon;
-            while (i<resultObj.length) {
-                if ((resultObj[i].LanesAffected).replace(/ +(?= )/g,'') == ("All Lanes Closed")) {
-                    switch(resultObj[i].EventType) {
+            while (i < resultObj.length) {
+                if ((resultObj[i].LanesAffected).replace(/ +(?= )/g, '') == ("All Lanes Closed")) {
+                    switch (resultObj[i].EventType) {
                         case "closures":
                             icon = "Incident";
                             break;
@@ -146,7 +144,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell3.innerHTML = resultObj[i].RoadwayName;
                         cell4.innerHTML = moment(new Date(resultObj[i].LastUpdated * 1000)).format('LLL');
                     } else {
-                        drawMarkers("AK",resultObj[i].ID,"",resultObj[i].Longitude,resultObj[i].Latitude,icon,resultObj[i].Description,resultObj[i].LastUpdated,"");
+                        drawMarkers("AK", resultObj[i].ID, "", resultObj[i].Longitude, resultObj[i].Latitude, icon, resultObj[i].Description, resultObj[i].LastUpdated, "");
                     }
                 }
                 i++;
@@ -161,10 +159,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the DE Advisory JSON Feed
     function getDEDOTAdv(type) {
-        getFeed(DEAdvURL, function(result) {
+        getFeed(DEAdvURL, function (result) {
             var resultObj = JSON.parse(result.responseText).advisories;
-            var i=0;
-            while (i<resultObj.length) {
+            var i = 0;
+            while (i < resultObj.length) {
                 if (type == "report") {
                     let table = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
                     var row = table.insertRow(-1);
@@ -177,7 +175,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     cell3.innerHTML = resultObj[i].where.county.name;
                     cell4.innerHTML = moment(new Date(resultObj[i].timestamp)).format('LLL');
                 } else {
-                    drawMarkers("DEAdv",resultObj[i].id,resultObj[i].type.name,resultObj[i].where.lon,resultObj[i].where.lat,"DEIconC",resultObj[i].where.location,resultObj[i].timestamp,resultObj[i].published.linkbackUrl);
+                    drawMarkers("DEAdv", resultObj[i].id, resultObj[i].type.name, resultObj[i].where.lon, resultObj[i].where.lat, "DEIconC", resultObj[i].where.location, resultObj[i].timestamp, resultObj[i].published.linkbackUrl);
                 }
                 i++;
             }
@@ -186,10 +184,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the DE Schedule JSON Feed
     function getDEDOTSch(type) {
-        getFeed(DESchURL, function(result) {
+        getFeed(DESchURL, function (result) {
             var resultObj = JSON.parse(result.responseText);
-            var i=0;
-            while (i<resultObj.length) {
+            var i = 0;
+            while (i < resultObj.length) {
                 if (resultObj[i].str.impactType == "Closure") {
                     if (type == "report") {
                         let table = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
@@ -203,7 +201,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell3.innerHTML = resultObj[i].str.county;
                         cell4.innerHTML = moment(new Date(resultObj[i].str.actualStartDate)).format('LLL');
                     } else {
-                        drawMarkers("DESch",resultObj[i].str.strId,resultObj[i].str.title,resultObj[i].str.longitude,resultObj[i].str.latitude,"DEIconSch" + resultObj[i].str.impactType,resultObj[i].str.construction,resultObj[i].str.startDate,resultObj[i].str.releaseId);
+                        drawMarkers("DESch", resultObj[i].str.strId, resultObj[i].str.title, resultObj[i].str.longitude, resultObj[i].str.latitude, "DEIconSch" + resultObj[i].str.impactType, resultObj[i].str.construction, resultObj[i].str.startDate, resultObj[i].str.releaseId);
                     }
                 }
                 i++;
@@ -215,13 +213,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the LA Event JSON Feed
     function getLADOT(type) {
-        getFeed(LAURL, function(result) {
+        getFeed(LAURL, function (result) {
             var resultObj = JSON.parse(result.responseText);
-            var i=0;
+            var i = 0;
             var icon;
-            while (i<resultObj.length) {
-                if ((resultObj[i].LanesAffected).replace(/ +(?= )/g,'') == ("All Lanes Closed")) {
-                    switch(resultObj[i].EventType) {
+            while (i < resultObj.length) {
+                if ((resultObj[i].LanesAffected).replace(/ +(?= )/g, '') == ("All Lanes Closed")) {
+                    switch (resultObj[i].EventType) {
                         case "closures":
                             icon = "Incident";
                             break;
@@ -243,7 +241,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell3.innerHTML = resultObj[i].RoadwayName;
                         cell4.innerHTML = moment(new Date(resultObj[i].LastUpdated * 1000)).format('LLL');
                     } else {
-                        drawMarkers("LA",resultObj[i].ID,"",resultObj[i].Longitude,resultObj[i].Latitude,icon,resultObj[i].Description,resultObj[i].LastUpdated,"");
+                        drawMarkers("LA", resultObj[i].ID, "", resultObj[i].Longitude, resultObj[i].Latitude, icon, resultObj[i].Description, resultObj[i].LastUpdated, "");
                     }
                 }
                 i++;
@@ -255,7 +253,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the NJ Schedule JSON Feed
     function getNJDOT(type) {
-        getFeed(NJURLList, function(result) {
+        getFeed(NJURLList, function (result) {
             var resultObj = JSON.parse(result.responseText).Data.features;
             var length = resultObj.length;
             let advisories = [];
@@ -265,19 +263,18 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     advisories.push(resultObj[i].properties.EventID);
                 }
             }
-            getNJDetails(type,advisories);
+            getNJDetails(type, advisories);
         })
     }
-    function getNJDetails(type,advisories) {
+    function getNJDetails(type, advisories) {
         var promises = [];
         for (let i = 0; i < advisories.length; i++) {
-            promises.push(new Promise((resolve,reject) => {
-                getFeed(NJURLDetail + advisories[i], function(result2) {
+            promises.push(new Promise((resolve, reject) => {
+                getFeed(NJURLDetail + advisories[i], function (result2) {
                     var eventObj = JSON.parse(result2.responseText).Data;
-                    if ((eventObj[0].FullText.toUpperCase()).includes("ALL LANES CLOSE") || (eventObj[0].FullText.toUpperCase()).includes("RAMP CLOSE"))
-                    {
+                    if ((eventObj[0].FullText.toUpperCase()).includes("ALL LANES CLOSE") || (eventObj[0].FullText.toUpperCase()).includes("RAMP CLOSE")) {
                         var icon;
-                        switch(eventObj[0].CategoryName) {
+                        switch (eventObj[0].CategoryName) {
                             case "Incident":
                                 icon = "Incident";
                                 break;
@@ -305,7 +302,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                             cell3.innerHTML = eventObj[0].County
                             cell4.innerHTML = moment(new Date(eventObj[0].LastUpdateDate_String)).format('LLL');
                         } else {
-                            drawMarkers("NJ",eventObj[0].markerId,eventObj[0].County + " - " + eventObj[0].CategoryName,eventObj[0].Longitude,eventObj[0].Latitude,icon,eventObj[0].FullText,eventObj[0].LastUpdateDate_String,"");
+                            drawMarkers("NJ", eventObj[0].markerId, eventObj[0].County + " - " + eventObj[0].CategoryName, eventObj[0].Longitude, eventObj[0].Latitude, icon, eventObj[0].FullText, eventObj[0].LastUpdateDate_String, "");
                         }
                     }
                     resolve(); //Let the Promise.all() know that we finished this dependency
@@ -313,19 +310,19 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             }))
         }
         Promise.all(promises).then(function () {
-            if (type=="report") { reportWorker(); } //Run the reportWorker after we've resolved all promises (ie, fetched the details of all pertinent report IDs)
+            if (type == "report") { reportWorker(); } //Run the reportWorker after we've resolved all promises (ie, fetched the details of all pertinent report IDs)
         });
     }
     //Get the NY Event JSON Feed
     function getNYDOT(type) {
-        getFeed(NYURL, function(result) {
+        getFeed(NYURL, function (result) {
             var resultObj = JSON.parse(result.responseText);
-            var i=0;
+            var i = 0;
             var icon;
-            while (i<resultObj.length) {
+            while (i < resultObj.length) {
                 if (NotNY.includes(resultObj[i].RegionName) == false && resultObj[i].EventType != 'transitMode' && resultObj[i].EventSubType != 'Capacity related') { //skip anything not NY & transit notices & parking notices
                     if (resultObj[i].EventType == 'closures' || (resultObj[i].EventType != 'closures' && resultObj[i].LanesAffected == 'all lanes' && (resultObj[i].LanesStatus == 'closed' || resultObj[i].LanesStatus == "blocked"))) {
-                        switch(resultObj[i].EventType) {
+                        switch (resultObj[i].EventType) {
                             case "accidentsAndIncidents":
                                 icon = "Incident";
                                 break;
@@ -360,9 +357,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                             cell1.innerHTML = '<div class="gotoPL" data-lat="' + resultObj[i].Latitude + '" data-lon="' + resultObj[i].Longitude + '"><img src=' + PLIcon + '></div>';
                             cell2.innerHTML = resultObj[i].Description;
                             cell3.innerHTML = resultObj[i].CountyName;
-                            cell4.innerHTML = moment(moment(resultObj[i].LastUpdated,"DD/MM/YYYY HH:mm:ss")).format('LLL');
+                            cell4.innerHTML = moment(moment(resultObj[i].LastUpdated, "DD/MM/YYYY HH:mm:ss")).format('LLL');
                         } else {
-                            drawMarkers("NY",resultObj[i].ID,"",resultObj[i].Longitude,resultObj[i].Latitude,icon,resultObj[i].Description,resultObj[i].LastUpdated,"");
+                            drawMarkers("NY", resultObj[i].ID, "", resultObj[i].Longitude, resultObj[i].Latitude, icon, resultObj[i].Description, resultObj[i].LastUpdated, "");
                         }
                     }
                 }
@@ -375,14 +372,14 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the PA Event JSON Feed
     function getPADOT(type) {
-        getFeed(PAURL, function(result) {
+        getFeed(PAURL, function (result) {
             var resultObj = JSON.parse(result.responseText);
-            var i=0;
+            var i = 0;
             var icon;
-            var x,y;
-            while (i<resultObj.length) {
+            var x, y;
+            while (i < resultObj.length) {
                 if ((resultObj[i].LaneStatus == "closed") || (resultObj[i].LaneStatus == "ramp closure")) {
-                    switch(resultObj[i].EventType) {
+                    switch (resultObj[i].EventType) {
                         case "roadwork":
                             icon = "Roadwork";
                             break;
@@ -408,7 +405,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell3.innerHTML = resultObj[i].CountyName;
                         cell4.innerHTML = moment(new Date(resultObj[i].DateTimeNotified)).format('LLL'); //('MM/DD/YYYY HH:mm');
                     } else {
-                        drawMarkers("PA",resultObj[i].EventID,resultObj[i].Facility,x,y,icon,resultObj[i].Description,resultObj[i].LastUpdate,"");
+                        drawMarkers("PA", resultObj[i].EventID, resultObj[i].Facility, x, y, icon, resultObj[i].Description, resultObj[i].LastUpdate, "");
                     }
                 }
                 i++;
@@ -420,14 +417,14 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Get the WA Event JSON Feed
     function getWADOT(type) {
-        getFeed(WAURL, function(result) {
+        getFeed(WAURL, function (result) {
             var resultObj = JSON.parse(result.responseText);
-            var i=0;
+            var i = 0;
             var icon;
             var county;
-            while (i<resultObj.length) {
+            while (i < resultObj.length) {
                 if (resultObj[i].EventCategory == 'Closure' || resultObj[i].EventCategory == 'Construction' || resultObj[i].EventCategory == 'Bridge') {
-                    switch(resultObj[i].EventCategory) {
+                    switch (resultObj[i].EventCategory) {
                         case "Construction":
                             icon = "Roadwork";
                             break;
@@ -440,7 +437,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         default:
                             icon = "Incident";
                     }
-                    var unixtime = parseInt(resultObj[i].LastUpdatedTime.replace("/Date(","").replace(")/","").split("-")[0]);
+                    var unixtime = parseInt(resultObj[i].LastUpdatedTime.replace("/Date(", "").replace(")/", "").split("-")[0]);
                     let datetime = new Date(unixtime).toLocaleString();
                     if (resultObj[i].County == null) {
                         county = resultObj[i].Region;
@@ -459,7 +456,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell3.innerHTML = county;
                         cell4.innerHTML = moment(new Date(datetime)).format('LLL'); //moment(new Date(resultObj[i].DateTimeNotified)).format('YYYY/MM/DD hh:mm a');
                     } else {
-                        drawMarkers("WA",resultObj[i].AlertID,"",resultObj[i].StartRoadwayLocation.Longitude,resultObj[i].StartRoadwayLocation.Latitude,icon,resultObj[i].HeadlineDescription,datetime,"");
+                        drawMarkers("WA", resultObj[i].AlertID, "", resultObj[i].StartRoadwayLocation.Longitude, resultObj[i].StartRoadwayLocation.Latitude, icon, resultObj[i].HeadlineDescription, datetime, "");
                     }
                 }
                 i++;
@@ -477,11 +474,11 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         refreshReportTable();
     }
     function refreshReportTable() {
-        var sort = new Tablesort(document.getElementById('reportTable'),{descending: true});
+        var sort = new Tablesort(document.getElementById('reportTable'), { descending: true });
         sort.refresh();
     }
     function getReportData(id) {
-        switch(id) {
+        switch (id) {
             case "DOTAKPopup":
                 popupdetails("Alaska");
                 getAKDOT("report");
@@ -512,20 +509,20 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         }
     }
     //Generate the Advisory markers
-    function drawMarkers(state,id,title,x,y,icontype,desc,timestamp,link) {
-        var size = new OpenLayers.Size(20,20);
-        var offset = new OpenLayers.Pixel(-(size.w/2), -size.h);
-        var icon = new OpenLayers.Icon(eval(icontype),size);
+    function drawMarkers(state, id, title, x, y, icontype, desc, timestamp, link) {
+        var size = new OpenLayers.Size(20, 20);
+        var offset = new OpenLayers.Pixel(-(size.w / 2), -size.h);
+        var icon = new OpenLayers.Icon(eval(icontype), size);
         var epsg4326 = new OpenLayers.Projection("EPSG:4326"); //WGS 1984 projection
         var projectTo = W.map.getProjectionObject(); //The map projection (Spherical Mercator)
-        var lonLat = new OpenLayers.LonLat(x,y).transform(epsg4326,projectTo);
-        var newMarker = new OpenLayers.Marker(lonLat,icon);
+        var lonLat = new OpenLayers.LonLat(x, y).transform(epsg4326, projectTo);
+        var newMarker = new OpenLayers.Marker(lonLat, icon);
         newMarker.desc = desc;
         newMarker.eventId = id;
         newMarker.title = title;
         newMarker.state = state;
         newMarker.timestamp = timestamp;
-        newMarker.events.register('click',newMarker,popup);
+        newMarker.events.register('click', newMarker, popup);
         newMarker.location = lonLat;
         if (link != "-1" && state == "DESch") {
             newMarker.link = '<a href=https://deldot.gov/About/news/index.shtml?dc=release&id=' + link + ' target="_blank">';
@@ -534,98 +531,98 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         } else {
             newMarker.link = link;
         }
-        eval(state.substring(0,2) + "DOTLayer.addMarker(newMarker)");
+        eval(state.substring(0, 2) + "DOTLayer.addMarker(newMarker)");
     }
     function popup(evt) {
-        $("#gmPopupContainer").remove ();
-        $("#gmPopupContainer").hide ();
+        $("#gmPopupContainer").remove();
+        $("#gmPopupContainer").hide();
         var popupHTML;
         W.map.moveTo(this.location);
-        switch(this.state) {
+        switch (this.state) {
             case "DEAdv":
                 this.timestamp = new Date(this.timestamp);
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">' + this.title + '</div><hr class="myhrline"/>' +
-                              'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
-                              '<tr><td>' + this.desc + '</td></tr>' +
-                              '<tr><td><a href="' + this.link + '" target="_blank">DelDot Link</a></td></tr>' +
-                              '</table>' +
-                              '</div>'
-                             ]);
+                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">' + this.title + '</div><hr class="myhrline"/>' +
+                    'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
+                    '<tr><td>' + this.desc + '</td></tr>' +
+                    '<tr><td><a href="' + this.link + '" target="_blank">DelDot Link</a></td></tr>' +
+                    '</table>' +
+                    '</div>'
+                ]);
                 break;
             case "DESch":
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">Scheduled Closure</div><hr class="myhrline"/>' +
-                              '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
-                              '<tr><td>Period: ' + this.timestamp.replace(/ 12:00 AM/g,"") + '<hr class="myhrline"/></td></tr>' +
-                              '<tr><td>' + this.desc + '</td></tr>' +
-                              '<tr><td>' + this.link + 'DelDot Link</a></td></tr>' +
-                              '</table>' +
-                              '</div>'
-                             ]);
+                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">Scheduled Closure</div><hr class="myhrline"/>' +
+                    '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
+                    '<tr><td>Period: ' + this.timestamp.replace(/ 12:00 AM/g, "") + '<hr class="myhrline"/></td></tr>' +
+                    '<tr><td>' + this.desc + '</td></tr>' +
+                    '<tr><td>' + this.link + 'DelDot Link</a></td></tr>' +
+                    '</table>' +
+                    '</div>'
+                ]);
                 break;
             case "NJ":
             case "NY":
             case "PA":
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
-                              '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
-                              '<tr><td>Time: ' + new Date(this.timestamp).toLocaleString() + '<hr class="myhrline"/></td></tr>' +
-                              '<tr><td>' + this.desc + '</td></tr>' +
-                              '</table>' +
-                              '</div>'
-                             ]);
+                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
+                    '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
+                    '<tr><td>Time: ' + new Date(this.timestamp).toLocaleString() + '<hr class="myhrline"/></td></tr>' +
+                    '<tr><td>' + this.desc + '</td></tr>' +
+                    '</table>' +
+                    '</div>'
+                ]);
                 break;
             case "AK":
             case "LA":
             case "WA":
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                              '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                              '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
-                              'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
-                              '<tr><td>' + this.desc + '</td></tr>' +
-                              '</table>' +
-                              '</div>'
-                             ]);
+                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
+                    'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
+                    '<tr><td>' + this.desc + '</td></tr>' +
+                    '</table>' +
+                    '</div>'
+                ]);
         }
         $("body").append(popupHTML);
         //Position the modal based on the position of the click event
-        $("#gmPopupContainer").css({left: document.getElementById("user-tabs").offsetWidth + W.map.getPixelFromLonLat(W.map.getCenter()).x - document.getElementById("gmPopupContainer").clientWidth - 10 });
-        $("#gmPopupContainer").css({top: document.getElementById("left-app-head").offsetHeight + W.map.getPixelFromLonLat(W.map.getCenter()).y - (document.getElementById("gmPopupContainer").clientHeight / 2) });
+        $("#gmPopupContainer").css({ left: document.getElementById("user-tabs").offsetWidth + W.map.getPixelFromLonLat(W.map.getCenter()).x - document.getElementById("gmPopupContainer").clientWidth - 10 });
+        $("#gmPopupContainer").css({ top: document.getElementById("left-app-head").offsetHeight + W.map.getPixelFromLonLat(W.map.getCenter()).y - (document.getElementById("gmPopupContainer").clientHeight / 2) });
         $("#gmPopupContainer").show();
         //Add listener for popup's "Close" button
-        $("#gmCloseDlgBtn").click ( function () {
-            $("#gmPopupContainer").remove ();
-            $("#gmPopupContainer").hide ();
+        $("#gmCloseDlgBtn").click(function () {
+            $("#gmPopupContainer").remove();
+            $("#gmPopupContainer").hide();
         });
         dragElement(document.getElementById("gmPopupContainer"));
     }
     function popupdetails(state) {
-        $("#gmPopupContainer").remove ();
-        $("#gmPopupContainer").hide ();
+        $("#gmPopupContainer").remove();
+        $("#gmPopupContainer").hide();
         var popupHTML;
         popupHTML = (['<div id="gmPopupContainer" style="max-width:750px;max-height:500px;margin: 1;text-align: center;padding: 5px;">' +
-                      '<a href="#close" id="popupdetailsclose" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                      '<table border=0><tr><td><div id="mydivheader"">' + state + ' Reports</div></td></tr>' +
-                      '<tr><td>' +
-                      '<div style="width:720px; height:450px; overflow:auto;"><table id="reportTable" border=1>' +
-                      '<thead><tr><td data-sort-method="none" width=30><b>PL</b></td><th width=394>Description</th><th width=100>Location</th><th data-sort-default width=210>Time</th></tr></thead>' +
-                      '<tbody></tbody></table></div>' +
-                      '</td></tr></table>' +
-                      '</div>'
-                     ]);
+            '<a href="#close" id="popupdetailsclose" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+            '<table border=0><tr><td><div id="mydivheader"">' + state + ' Reports</div></td></tr>' +
+            '<tr><td>' +
+            '<div style="width:720px; height:450px; overflow:auto;"><table id="reportTable" border=1>' +
+            '<thead><tr><td data-sort-method="none" width=30><b>PL</b></td><th width=394>Description</th><th width=100>Location</th><th data-sort-default width=210>Time</th></tr></thead>' +
+            '<tbody></tbody></table></div>' +
+            '</td></tr></table>' +
+            '</div>'
+        ]);
         $("body").append(popupHTML);
         //Position the modal based on the position of the click event
-        $("#gmPopupContainer").css({left: 400});
-        $("#gmPopupContainer").css({top: 100});
+        $("#gmPopupContainer").css({ left: 400 });
+        $("#gmPopupContainer").css({ top: 100 });
         $("#gmPopupContainer").show();
         //Add listener for popup's "Close" button
-        $("#popupdetailsclose").click ( function () {
-            $("#gmPopupContainer").remove ();
-            $("#gmPopupContainer").hide ();
+        $("#popupdetailsclose").click(function () {
+            $("#gmPopupContainer").remove();
+            $("#gmPopupContainer").hide();
         });
         dragElement(document.getElementById("gmPopupContainer"));
     }
@@ -674,13 +671,12 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         var projectTo = W.map.getProjectionObject(); //The map projection (Spherical Mercator)
         var lat = this.getAttribute("data-lat");
         var lon = this.getAttribute("data-lon");
-        W.map.moveTo(new OpenLayers.LonLat(lon,lat).transform(epsg4326,projectTo),6);
+        W.map.moveTo(new OpenLayers.LonLat(lon, lat).transform(epsg4326, projectTo), 6);
     }
     //Initialize Settings
-    function initializeSettings()
-    {
+    function initializeSettings() {
         for (var i = 0; i < document.getElementsByClassName("DOTreport").length; i++) {
-            document.getElementsByClassName("DOTreport")[i].addEventListener('click', function(e) {getReportData(this.getAttribute("id"));}, false);
+            document.getElementsByClassName("DOTreport")[i].addEventListener('click', function (e) { getReportData(this.getAttribute("id")); }, false);
         }
         loadSettings();
         setChecked('chkAKDOTEnabled', settings.AKDOTEnabled);
@@ -690,7 +686,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         setChecked('chkNYDOTEnabled', settings.NYDOTEnabled);
         setChecked('chkPADOTEnabled', settings.PADOTEnabled);
         setChecked('chkWADOTEnabled', settings.WADOTEnabled);
-        $(".overlay-button").click(function(){
+        $(".overlay-button").click(function () {
             if (document.getElementById('chkAKDOTEnabled').checked) { eval('W.map.removeLayer(AKDOTLayer)'); }
             if (document.getElementById('chkDEDOTEnabled').checked) { eval('W.map.removeLayer(DEDOTLayer)'); }
             if (document.getElementById('chkLADOTEnabled').checked) { eval('W.map.removeLayer(LADOTLayer)'); }
@@ -702,30 +698,29 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         });
 
         //Add Handler for Checkbox Setting Changes
-        $('.WMEDOTAdvSettingsCheckbox').change(function() {
+        $('.WMEDOTAdvSettingsCheckbox').change(function () {
             var settingName = $(this)[0].id.substr(3);
             settings[settingName] = this.checked;
             saveSettings();
-            if(this.checked) {
-                buildDOTAdvLayers(settingName.substring(0,2));
-                eval("get" + settingName.substring(0,2) + "DOT()");
+            if (this.checked) {
+                buildDOTAdvLayers(settingName.substring(0, 2));
+                eval("get" + settingName.substring(0, 2) + "DOT()");
             }
-            else
-            {
+            else {
                 //eval(settingName.substring(0,2) + "DOTLayer.destroy()");
-                eval('W.map.removeLayer(' + settingName.substring(0,2) + 'DOTLayer)');
+                eval('W.map.removeLayer(' + settingName.substring(0, 2) + 'DOTLayer)');
             }
         });
         if (document.getElementById('WMEFUzoom') != null) {
-            document.getElementById('WMEFUzoom').style.zIndex = "45000";
+            document.getElementById('WMEFUzoom').style.zIndex = "4000";
         }
-        if (document.getElementById('chkAKDOTEnabled').checked) { buildDOTAdvLayers("AK"); getAKDOT();}
-        if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT();}
-        if (document.getElementById('chkLADOTEnabled').checked) { buildDOTAdvLayers("LA"); getLADOT();}
-        if (document.getElementById('chkNJDOTEnabled').checked) { buildDOTAdvLayers("NJ"); getNJDOT();}
-        if (document.getElementById('chkNYDOTEnabled').checked) { buildDOTAdvLayers("NY"); getNYDOT();}
-        if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT();}
-        if (document.getElementById('chkWADOTEnabled').checked) { buildDOTAdvLayers("WA"); getWADOT();}
+        if (document.getElementById('chkAKDOTEnabled').checked) { buildDOTAdvLayers("AK"); getAKDOT(); }
+        if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT(); }
+        if (document.getElementById('chkLADOTEnabled').checked) { buildDOTAdvLayers("LA"); getLADOT(); }
+        if (document.getElementById('chkNJDOTEnabled').checked) { buildDOTAdvLayers("NJ"); getNJDOT(); }
+        if (document.getElementById('chkNYDOTEnabled').checked) { buildDOTAdvLayers("NY"); getNYDOT(); }
+        if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT(); }
+        if (document.getElementById('chkWADOTEnabled').checked) { buildDOTAdvLayers("WA"); getWADOT(); }
     }
     //Set Checkbox from Settings
     function setChecked(checkboxId, checked) {
@@ -769,35 +764,35 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             calculateOffset: null,
             imageDiv: null,
             px: null,
-            initialize: function(a,b,c,d){
-                this.url=a;
-                this.size=b||{w: 20,h: 20};
-                this.offset=c||{x: -(this.size.w/2),y: -(this.size.h/2)};
-                this.calculateOffset=d;
-                a=OpenLayers.Util.createUniqueID("OL_Icon_");
-                let div = this.imageDiv=OpenLayers.Util.createAlphaImageDiv(a);
+            initialize: function (a, b, c, d) {
+                this.url = a;
+                this.size = b || { w: 20, h: 20 };
+                this.offset = c || { x: -(this.size.w / 2), y: -(this.size.h / 2) };
+                this.calculateOffset = d;
+                a = OpenLayers.Util.createUniqueID("OL_Icon_");
+                let div = this.imageDiv = OpenLayers.Util.createAlphaImageDiv(a);
                 $(div.firstChild).removeClass('olAlphaImg'); // LEAVE THIS LINE TO PREVENT WME-HARDHATS SCRIPT FROM TURNING ALL ICONS INTO HARDHAT WAZERS --MAPOMATIC
             },
-            destroy: function(){ this.erase();OpenLayers.Event.stopObservingElement(this.imageDiv.firstChild);this.imageDiv.innerHTML="";this.imageDiv=null; },
-            clone: function(){ return new OpenLayers.Icon(this.url,this.size,this.offset,this.calculateOffset); },
-            setSize: function(a){ null!==a&&(this.size=a); this.draw(); },
-            setUrl: function(a){ null!==a&&(this.url=a); this.draw(); },
-            draw: function(a){
-                OpenLayers.Util.modifyAlphaImageDiv(this.imageDiv,null,null,this.size,this.url,"absolute");
+            destroy: function () { this.erase(); OpenLayers.Event.stopObservingElement(this.imageDiv.firstChild); this.imageDiv.innerHTML = ""; this.imageDiv = null; },
+            clone: function () { return new OpenLayers.Icon(this.url, this.size, this.offset, this.calculateOffset); },
+            setSize: function (a) { null !== a && (this.size = a); this.draw(); },
+            setUrl: function (a) { null !== a && (this.url = a); this.draw(); },
+            draw: function (a) {
+                OpenLayers.Util.modifyAlphaImageDiv(this.imageDiv, null, null, this.size, this.url, "absolute");
                 this.moveTo(a);
                 return this.imageDiv;
             },
-            erase: function(){ null!==this.imageDiv&&null!==this.imageDiv.parentNode&&OpenLayers.Element.remove(this.imageDiv); },
-            setOpacity: function(a){ OpenLayers.Util.modifyAlphaImageDiv(this.imageDiv,null,null,null,null,null,null,null,a); },
-            moveTo: function(a){
-                null!==a&&(this.px=a);
-                null!==this.imageDiv&&(null===this.px?this.display(!1): (
-                    this.calculateOffset&&(this.offset=this.calculateOffset(this.size)),
-                    OpenLayers.Util.modifyAlphaImageDiv(this.imageDiv,null,{x: this.px.x+this.offset.x,y: this.px.y+this.offset.y})
+            erase: function () { null !== this.imageDiv && null !== this.imageDiv.parentNode && OpenLayers.Element.remove(this.imageDiv); },
+            setOpacity: function (a) { OpenLayers.Util.modifyAlphaImageDiv(this.imageDiv, null, null, null, null, null, null, null, a); },
+            moveTo: function (a) {
+                null !== a && (this.px = a);
+                null !== this.imageDiv && (null === this.px ? this.display(!1) : (
+                    this.calculateOffset && (this.offset = this.calculateOffset(this.size)),
+                    OpenLayers.Util.modifyAlphaImageDiv(this.imageDiv, null, { x: this.px.x + this.offset.x, y: this.px.y + this.offset.y })
                 ));
             },
-            display: function(a){ this.imageDiv.style.display=a?"": "none"; },
-            isDrawn: function(){ return this.imageDiv&&this.imageDiv.parentNode&&11!=this.imageDiv.parentNode.nodeType; },
+            display: function (a) { this.imageDiv.style.display = a ? "" : "none"; },
+            isDrawn: function () { return this.imageDiv && this.imageDiv.parentNode && 11 != this.imageDiv.parentNode.nodeType; },
             CLASS_NAME: "OpenLayers.Icon"
         });
     }
