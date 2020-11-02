@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.13
+// @version      1.14
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -20,6 +20,7 @@
 // @connect      deldot.gov
 // @connect      511ny.org
 // @connect      511nj.org
+// @connect      ohgo.com
 // @connect      rehostjson.phuz.repl.co
 /* global OpenLayers */
 /* global W */
@@ -29,15 +30,10 @@
 /* global _ */
 // ==/UserScript==
 
-let AKDOTLayer;
-let DEDOTLayer;
-let LADOTLayer;
-let NJDOTLayer;
-let NYDOTLayer;
-let PADOTLayer;
-let WADOTLayer;
+let AKDOTLayer, DEDOTLayer, LADOTLayer, NJDOTLayer, NYDOTLayer, OHDOTLayer, PADOTLayer, WADOTLayer;
 var settings;
-const updateMessage = "&#9658; Added Alaska, Louisiana<br>&#9658; Bug Fixes";
+var state, stateLength;
+const updateMessage = "&#9658; Added Ohio<br>&#9658; Bug Fixes";
 const DEIconC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2NTZCOTQ4MEMxM0FFNDExOTJCNzgxMEFBMkM5Q0QzRSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpGRjU0MDFBMUJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpGRjU0MDFBMEJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkYwRjVFQTIwMDlCQUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY1NkI5NDgwQzEzQUU0MTE5MkI3ODEwQUEyQzlDRDNFIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+iRjjNgAABVBJREFUeNqsVwlsVFUUPX+Z+Z1OoaWFSqFaU0hYBSSiCdYQhaRKNdFAUlRcMAFL1ABBESMouEYxwTSxRutWIkbBqKQEwxZoWKKGrcoiAqKsBStLO+1s/8/zvP+nzLTzZzpRX+a00+n999x391GEEOh5xOXTsM7+Amgq0px8ojT++wJxjgi6SsZiUIw8aEPuABTl2se6m6z560Z0rpoNJcdI/ngg8QAxlRhFFBNSIEC0ED8R3xIbiEhCWRjqwBHIW9zMi3gyE9M0+xW3UEovJBZAkIyKhEUvJRxVQNkCxaMNp+JH+fcBYhmxzlGldLtpL8TXDBjEHw3EFEQdT6qDxkAfUgG1ZDQUf6ETltN7YZ7YCfH3GZqpj6MB31F0BbGYOmLOLbInlq7cZLs1FIR243gYdy+FPoqe1rxAOADr1D5o46udvAj8heiPDQhvfovvWwGv7znbG8AcN+Wu2aNoHmnix12knomPwz+/CfqY+x1SntC65xF4ZZJNZj+TNwDeyc/CP2871ME3Mcq2h2YT87Imti4enUXv3GuT3vogfDM/5Q3yEgLBK4juXwtB82zipMpQS0bBX7Meav9yJpadY6/TrGE93Z3iatHW0iey+6OXZT6oxUOQU/1earlZURiVLzo3ZalAmHyTyFil3w3ImfE+OuuqZD35IWJLyTuzuxJam4xwU231lRqIK3MhIjvqxH85HR/cZ+tpW5gXsM4fHpTMk3Jj61hTpSwVtV8x9LHTUuPA7A6ufdpJIJWPR8PQym6BMXVZiqh3wiMwmxshOgJ+83hThXfgiDXurjYjitVyZKx8q8ly6VOcGv/fdyGy/RMnO2TYLL6Ob4O34kkofUu6yWplE1hy+Yi1X4V1cvftqKhZ45pcInTVJzovDXDidL1rjUWPbISSmwu1oAhqPlFYxBDS5mNNqdXh70/ZQrvZiFB7QYbkkhIxJV5TrsRG5RIYUxZ170Yxwfbqd6lL1UHc82mJFU9uWPH6A7YJ7RdSFUU6IIJXaZOW3DIdk9s7oRQMduLe9Rll6UVHty//YvobG3mWet3w/VbLyeGxlkN2d4KRqN/w98sR3vIub5fbs8AgwiHkPrEa+rjpCUecP8gkvGQ7Ryu9eU/GBqKPvKfRfqj1T5hHt8QVHOLE2oTogW/IEeWrsweCLOUIWP8wf9vG/n3KyQfZZEyORZ8vpA+dtCMz8eiqzWqfvq2yG0W2vuPcdP0SdLxdSWNO0HS6OWalgNMJ5uGNCLx5Fw38mo3gDKJ7v4KiK1AKy7aoJSP/yNi51KLyVs/46vrIzvoXzGO7EN70BnKmrYT3zvnJiZJporEiShH8fBZj3OYsE5pe2/NZ1+mklU+sFTvq5yiGURRuXGqXhLeiBtmeYMPDvD3DlOOTiwB9L7aix6ajpllX5Ebxmm2lpiP05VyEeAPb1RmOxfh2rLiNg+MLh5S0xCKpMct5bFtXRzwEVZsAbw4T5zNEDzZyHldBHzYZ6oChHPq5EJ2XETvXDPPQBibWdrJHu0jlWUnscWPItAjImSb9u1NWoVQmQm2I/LDKhqLzUZWJZkWYucIJoYcrmHaN9DCxPJ3y3rJlH/FMQlrnGPTZkCFwTDdY1z65cSQnX8D2FtDxb4kR30Tq3BfCrkmRcqSnmjMpVbNM1AXE1ixlXyJW9yaULbGM94zebsHzIfFqNgpVZH84+bmHAT+n+f/auIvxfxPLw8UZVS7kco9+DCkzK/1xLyc52S3YpZKGXH6NWU+MI+qJp+RMcO8qMae2syGWLVIbPIIj0Uhn8FlCLmTT498Y0t/UjLLZlKd8jflHgAEAjYU+RhKpTDQAAAAASUVORK5CYII=';
 const DEIconSchRestriction = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowNTdDRTI5RjhFOENFNTExQkIwQkQ3QjFGMjA1NkNGMiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0MzMwRkNCMUJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MzMwRkNCMEJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjI4Q0M2MTJGNEVCOUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjA1N0NFMjlGOEU4Q0U1MTFCQjBCRDdCMUYyMDU2Q0YyIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YotOJgAABWdJREFUeNqcVwlsFFUY/nY7e7S0tPbQSkstUUu01NBWSzQKIjQaUbAxapAEj5g0KtEYRdEIeETjFYRglEDEIBgleIBnrGgjQY5C01SKFmrTi5ZSethjt7vt7o7fmzfb3ens0fqSL7Mz7/3/995/vX8tqqpCG2oA+LcRCPgAC+KNDCJZ/z0MW0o/rLbYEhYrkJgtn+J1gnh8CNhXBLguAFaTmINYSiwjridyiCR9zgXF2QmLcoK/vyd+I8YM0oLCMRO4pwZwZmqfFMOsfxTweScTP0QLrOV0Ifx8ExAWSdBn/UiD6s3hexnxJL/8SbxDfGYgVr3SqvoIIxbarPIhTX0psZ1YAZ+cQnYJMOs2IItPJZFu4S58LqCHJ+n8FehtFLLXcQN7uLqCqCT6pHpSWSyRiA0jj/iBO52nkeYtAkpepoGXTOwK395CUg/N9wdw9WpugtZt+w6ofR3orgfsuJerrtTd0zWZwBqBNIXYr5EKy9z4GnB3NUmXhkhPchOth4FzJ4Fjz+ma7MAcclUcAeY/zpjRvs4nvg6Lh5jEbxPFmi8XbuFJ18MQ5kNNQP37MtycRMM2oL8+NJ9Ajps/ZAg+GyRfQLwRj7iYHJWaQNFjQOFT5m0dfx5wu4HyvTzdMRltR58xr1vwHi1QDs1VwBqiMAqxRTh/DfVYMZNxVfaWWVlnFdC0X/gPSJ8HZJby5PRMC13R8qV5/U2budYholqh7ifCLRci9vYnM5fv0ExcwGBxZBiViOAJ+lOkxxjzfnxYFhyhpWadjPDwkXYtcMWd8tR+7zL43E4z8cDpAnjcsyAKUP4K8+7/+gg4f0rmgQg6Ty/JB6nULb9dbAZObTLLzamQB/W68zDcfJWZ2N2Vq+0skRUmtcAoPNot00QJKwieHoIp6tMrn9hw3bvASKtRNp3V0GYRoWDByLkcM7Ewg9BhI7Et2Shcu4EVuS9UrVT9xN5+efqgplGavuZFo6w9jRu2Sxm/22EmtqeOaCYRvgz4QoK9LMGnd8qAUsPKTgcD7ewu42bEqc9+QZdUG2MjePHY00bMxDNy26lQhYencHeHBEVA+f1m3xU9DZRuCEZtGJGQWctv+uZH2hmElFcsPiTPbjcTp81thsPRDg8FLhyW3/5hnW87FLmw9taxNLJcBgLGa1Ss7aoFGnfoKVgto1qxNSE5v9VM7MgYReo1P2m7b9rNxcJfL0il6iSIb0c3AlWP0hrj5nmhtfZVEbDM733yPb3oG8aOz0ycwNumdP02+iyAjt9Ziw/IPLQ5IyORSIoypxAZxfLUvU2CxY3SV3ZogRvxdkq6vJ7EuxBQH8Hxl4C7fuEKLg54p9KVhNVDEg+dAX5cLoMvgE1IcBjyzEgsAkLFOn4tx2BHLqru56XGpiIlH9MaffT/wVVMtyHBUEfiN0N5F/126iH5aqaGDxfZTHzFy6X586kRBujvhq28VBcy7zsFaT91rRIZPnlptEagmgKVJP8YrvPAzw/yPuZVN/dhdiC3ss2bLe9frfWhzuEW5jXdcuYTZkS91KrAQx0P8NffkQiUGPvfScEU2mSzZpdOcfETTvpvBiuf4xIZwqKCuXg6r35ZyGZzjFMr+TwYTbkSx3hb9PZu68RK0e4MNIfSKohQdyvMKkgPxIy/KXjuA63TDPYTwQ5T0Z9WQ4MyQCyPRzpVYjE+1bvGwRhrOojbo5pX/X/E0LpONjxEm2nGjwbmwBLihFYeI0H1x/CxGpdc/FtYTIg+p0S/FA6hbON9yCzuiSol9GbdECu41Ml5Hmm06H9n9opbmaddiZzFLmQvmlaNCf13kn0Xb5wjUy2PNm2nKg15GYuMM2taxP8JMAC5wMrd7FP1/wAAAABJRU5ErkJggg==';
 const DEIconSchClosure = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAoCAYAAADpE0oSAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTYxOTU5RkJGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTYxOTU5RkNGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFNjE5NTlGOUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFNjE5NTlGQUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PuSU594AAAfTSURBVHja5Fh7cJTV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';
@@ -52,6 +48,7 @@ const LAURL = 'https://rehostjson.phuz.repl.co/LA';
 const NJURLList = 'https://511nj.org/API/client/Map/getEventData';
 const NJURLDetail = 'https://511nj.org/API/client/Map/getEventPopupData?EventId=';
 const NYURL = 'https://rehostjson.phuz.repl.co/NY';
+const OHURL = 'https://api.ohgo.com/roadmarkers/TrafficSpeedAndAlertMarkers';
 const PAURL = 'https://rehostjson.phuz.repl.co/PA';
 const WAURL = 'https://rehostjson.phuz.repl.co/WA';
 const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut Statewide'];
@@ -87,6 +84,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkLADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>LA</td><td><div class=DOTreport data-report="report" id="DOTLAPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NJ</td><td><div class=DOTreport data-report="report" id="DOTNJPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>NY</td><td><div class=DOTreport data-report="report" id="DOTNYPopup"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td colspan=2 align=center><input type="checkbox" id="chkOHDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>OH</td><td><div class=DOTreport data-report="report" id="DOTOHPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>PA</td><td><div class=DOTreport data-report="report" id="DOTPAPopup"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td colspan=2 align=center><input type="checkbox" id="chkWADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td align=center>WA</td><td><div class=DOTreport data-report="report" id="DOTWAPopup"><img src=' + reportIcon + '></div></td></tr>',
             '</table>',
@@ -100,9 +98,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     })
     //Build the State Layers
     function buildDOTAdvLayers(state) {
-        eval(state.substring(0,2) + 'DOTLayer = new OpenLayers.Layer.Markers(' + state.substring(0,2) + 'DOTLayer)');
-        W.map.addLayer(eval(state.substring(0,2) + 'DOTLayer'));
-        W.map.getOLMap().setLayerIndex(eval(state.substring(0,2) + 'DOTLayer'), 0);
+        eval(state.substring(0, 2) + 'DOTLayer = new OpenLayers.Layer.Markers(' + state.substring(0, 2) + 'DOTLayer)');
+        W.map.addLayer(eval(state.substring(0, 2) + 'DOTLayer'));
+        W.map.getOLMap().setLayerIndex(eval(state.substring(0, 2) + 'DOTLayer'), 0);
     }
     function getFeed(url, callback) {
         GM_xmlhttpRequest({
@@ -370,6 +368,45 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             }
         })
     }
+    //Get the OH Event JSON Feed
+    function getOHDOT(type) {
+        getFeed(OHURL, function (result) {
+            var resultObj = JSON.parse(result.responseText);
+            var i = 0;
+            var icon;
+            var x, y;
+            while (i < resultObj.ConstructionMarkers.length) {
+                if (resultObj.ConstructionMarkers[i].Status == "Closed") {
+                    switch (resultObj.ConstructionMarkers[i].Category) {
+                        case "Roadwork - Planned":
+                        case "Roadwork - Unplanned":
+                            icon = "Roadwork";
+                            break;
+                        default:
+                            icon = "Incident";
+                    }
+                    if (type == "report") {
+                        let table = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
+                        var row = table.insertRow(-1);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        cell1.innerHTML = '<div class="gotoPL" data-lat="' + resultObj.ConstructionMarkers[i].Latitude + '" data-lon="' + resultObj.ConstructionMarkers[i].Longitude + '"><img src=' + PLIcon + '></div>';
+                        cell2.innerHTML = resultObj.ConstructionMarkers[i].Description;
+                        cell3.innerHTML = resultObj.ConstructionMarkers[i].RouteName;
+                        cell4.innerHTML = moment(new Date(resultObj.ConstructionMarkers[i].StartDate)).format('LL');
+                    } else {
+                        drawMarkers("OH", resultObj.ConstructionMarkers[i].Id, resultObj.ConstructionMarkers[i].RouteName, resultObj.ConstructionMarkers[i].Longitude, resultObj.ConstructionMarkers[i].Latitude, icon, resultObj.ConstructionMarkers[i].Description, resultObj.ConstructionMarkers[i].StartDate, "");
+                    }
+                }
+                i++;
+            }
+            if (type == "report") {
+                reportWorker();
+            }
+        })
+    }
     //Get the PA Event JSON Feed
     function getPADOT(type) {
         getFeed(PAURL, function (result) {
@@ -499,6 +536,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 popupdetails("New York");
                 getNYDOT("report");
                 break;
+            case "DOTOHPopup":
+                popupdetails("Ohio");
+                getOHDOT("report");
+                break;
             case "DOTPAPopup":
                 popupdetails("Pennsylvania");
                 getPADOT("report");
@@ -578,6 +619,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 break;
             case "AK":
             case "LA":
+            case "OH":
             case "WA":
                 popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
                     '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
@@ -600,13 +642,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         });
         dragElement(document.getElementById("gmPopupContainer"));
     }
-    function popupdetails(state) {
+    function popupdetails(stateName) {
         $("#gmPopupContainer").remove();
         $("#gmPopupContainer").hide();
         var popupHTML;
         popupHTML = (['<div id="gmPopupContainer" style="max-width:750px;max-height:500px;margin: 1;text-align: center;padding: 5px;">' +
             '<a href="#close" id="popupdetailsclose" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-            '<table border=0><tr><td><div id="mydivheader"">' + state + ' Reports</div></td></tr>' +
+            '<table border=0><tr><td><div id="mydivheader"">' + stateName + ' Reports</div></td></tr>' +
             '<tr><td>' +
             '<div style="width:720px; height:450px; overflow:auto;"><table id="reportTable" border=1>' +
             '<thead><tr><td data-sort-method="none" width=30><b>PL</b></td><th width=394>Description</th><th width=100>Location</th><th data-sort-default width=210>Time</th></tr></thead>' +
@@ -675,28 +717,28 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     //Initialize Settings
     function initializeSettings() {
-        for (var i = 0; i < document.getElementsByClassName("DOTreport").length; i++) {
+        stateLength = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox").length;
+        loadSettings();
+        //Set the state checkboxes according to saved settings
+        for (var i = 0; i < stateLength; i++) {
+            state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
+            setChecked('chk' + state + 'DOTEnabled', eval('settings.' + state + 'DOTEnabled'));
+            $(".overlay-button").click(function () {
+                if (document.getElementById('chk' + state + 'DOTEnabled').checked) { eval('W.map.removeLayer(' + state + 'DOTLayer)'); }
+            });
+        }
+        //Add event listener to report icon
+        for (var i = 0; i < document.getElementsByClassName("DOTreport").length - 1; i++) {
             document.getElementsByClassName("DOTreport")[i].addEventListener('click', function (e) { getReportData(this.getAttribute("id")); }, false);
         }
-        loadSettings();
-        setChecked('chkAKDOTEnabled', settings.AKDOTEnabled);
-        setChecked('chkDEDOTEnabled', settings.DEDOTEnabled);
-        setChecked('chkLADOTEnabled', settings.LADOTEnabled);
-        setChecked('chkNJDOTEnabled', settings.NJDOTEnabled);
-        setChecked('chkNYDOTEnabled', settings.NYDOTEnabled);
-        setChecked('chkPADOTEnabled', settings.PADOTEnabled);
-        setChecked('chkWADOTEnabled', settings.WADOTEnabled);
+        //Refresh selected states when WME's refresh button is clicked
         $(".overlay-button").click(function () {
-            if (document.getElementById('chkAKDOTEnabled').checked) { eval('W.map.removeLayer(AKDOTLayer)'); }
-            if (document.getElementById('chkDEDOTEnabled').checked) { eval('W.map.removeLayer(DEDOTLayer)'); }
-            if (document.getElementById('chkLADOTEnabled').checked) { eval('W.map.removeLayer(LADOTLayer)'); }
-            if (document.getElementById('chkNJDOTEnabled').checked) { eval('W.map.removeLayer(NJDOTLayer)'); }
-            if (document.getElementById('chkNYDOTEnabled').checked) { eval('W.map.removeLayer(NYDOTLayer)'); }
-            if (document.getElementById('chkPADOTEnabled').checked) { eval('W.map.removeLayer(PADOTLayer)'); }
-            if (document.getElementById('chkWADOTEnabled').checked) { eval('W.map.removeLayer(WADOTLayer)'); }
+            for (var i = 0; i < stateLength; i++) {
+                state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
+                if (document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked) { eval('W.map.removeLayer(' + state + 'DOTLayer)'); }
+            }
             initializeSettings();
         });
-
         //Add Handler for Checkbox Setting Changes
         $('.WMEDOTAdvSettingsCheckbox').change(function () {
             var settingName = $(this)[0].id.substr(3);
@@ -711,16 +753,15 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 eval('W.map.removeLayer(' + settingName.substring(0, 2) + 'DOTLayer)');
             }
         });
+        //Move the FixUI zoom bar to the front so DOT Advisory icons do not sit in front of it
         if (document.getElementById('WMEFUzoom') != null) {
             document.getElementById('WMEFUzoom').style.zIndex = "4000";
         }
-        if (document.getElementById('chkAKDOTEnabled').checked) { buildDOTAdvLayers("AK"); getAKDOT(); }
-        if (document.getElementById('chkDEDOTEnabled').checked) { buildDOTAdvLayers("DE"); getDEDOT(); }
-        if (document.getElementById('chkLADOTEnabled').checked) { buildDOTAdvLayers("LA"); getLADOT(); }
-        if (document.getElementById('chkNJDOTEnabled').checked) { buildDOTAdvLayers("NJ"); getNJDOT(); }
-        if (document.getElementById('chkNYDOTEnabled').checked) { buildDOTAdvLayers("NY"); getNYDOT(); }
-        if (document.getElementById('chkPADOTEnabled').checked) { buildDOTAdvLayers("PA"); getPADOT(); }
-        if (document.getElementById('chkWADOTEnabled').checked) { buildDOTAdvLayers("WA"); getWADOT(); }
+        //Build the layers for the selected states
+        for (var i = 0; i < stateLength; i++) {
+            state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
+            if (document.getElementById('chk' + state + 'DOTEnabled').checked) { buildDOTAdvLayers(state); eval('get' + state + 'DOT()'); }
+        }
     }
     //Set Checkbox from Settings
     function setChecked(checkboxId, checked) {
@@ -742,17 +783,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     //Save Tab Settings
     function saveSettings() {
         if (localStorage) {
-            var localsettings = {
-                AKDOTEnabled: settings.AKDOTEnabled,
-                DEDOTEnabled: settings.DEDOTEnabled,
-                LADOTEnabled: settings.LADOTEnabled,
-                NJDOTEnabled: settings.NJDOTEnabled,
-                NYDOTEnabled: settings.NYDOTEnabled,
-                PADOTEnabled: settings.PADOTEnabled,
-                WADOTEnabled: settings.WADOTEnabled,
-            };
-            localStorage.setItem("WMEDOT_Settings", JSON.stringify(localsettings));
+            var localsettings = {};
+            for (var i = 0; i < stateLength; i++) {
+                state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
+                eval('localsettings.' + state + 'DOTEnabled = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked');
+            }
         }
+        localStorage.setItem("WMEDOT_Settings", JSON.stringify(localsettings));
     }
     //Add the Icon Class to OpenLayers
     function installIcon() {
