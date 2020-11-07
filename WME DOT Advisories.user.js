@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.15
+// @version      1.16
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -146,81 +146,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             });
         }
     }
-    //Get the NJ Schedule JSON Feed
-    function getNJDOT(type) {
-        getFeed(NJURLList, function (result) {
-            var resultObj = JSON.parse(result.responseText).Data.features;
-            var length = resultObj.length;
-            let advisories = [];
-            var i = 0;
-            for (let i = 0; i < length; i++) {
-                if (["Incident", "Construction", "ScheduledConstruction", "Detour"].includes(resultObj[i].properties.CategoryName)) {
-                    advisories.push(resultObj[i].properties.EventID);
-                }
-            }
-            getNJDetails(type, advisories);
-        })
-    }
-    function getNJDetails(type, advisories) {
-        var promises = [];
-        for (let i = 0; i < advisories.length; i++) {
-            promises.push(new Promise((resolve, reject) => {
-                getFeed(NJURLDetail + advisories[i], function (result2) {
-                    var eventObj = JSON.parse(result2.responseText).Data;
-                    if ((eventObj[0].FullText.toUpperCase()).includes("ALL LANES CLOSE") || (eventObj[0].FullText.toUpperCase()).includes("RAMP CLOSE")) {
-                        var icon;
-                        switch (eventObj[0].CategoryName) {
-                            case "Incident":
-                                icon = "Incident";
-                                break;
-                            case "Detour":
-                                icon = "Incident";
-                                break;
-                            case "Construction":
-                                icon = "Roadwork";
-                                break;
-                            case "ScheduledConstruction":
-                                icon = "Roadwork";
-                                break;
-                            default:
-                                icon = "Incident";
-                        }
-                        if (type == "report") {
-                            let table = document.getElementById("reportTable").getElementsByTagName('tbody')[0];
-                            var row = table.insertRow(-1);
-                            var cell1 = row.insertCell(0);
-                            var cell2 = row.insertCell(1);
-                            var cell3 = row.insertCell(2);
-                            var cell4 = row.insertCell(3);
-                            cell1.innerHTML = '<div class="gotoPL" data-lat="' + eventObj[0].Latitude + '" data-lon="' + eventObj[0].Longitude + '"><img src=' + PLIcon + '></div>';
-                            cell2.innerHTML = eventObj[0].FullText
-                            cell3.innerHTML = eventObj[0].County
-                            cell4.innerHTML = moment(new Date(eventObj[0].LastUpdateDate_String)).format('LLL');
-                        } else {
-                            var results = {
-                                state: ["NJ", "New Jersey"],
-                                id: eventObj[0].markerId,
-                                popupType: 0,
-                                title: eventObj[0].County,
-                                lon: eventObj[0].Longitude,
-                                lat: eventObj[0].Latitude,
-                                type: eventObj[0].CategoryName,
-                                keyword: ['Construction', 'ScheduledConstruction'], //keywords for roadwork/construction
-                                desc: eventObj[0].FullText,
-                                time: eventObj[0].LastUpdateDate_String,
-                                link: ''
-                            };
-                            drawMarkers(results);
-                        }
-                    }
-                    resolve(); //Let the Promise.all() know that we finished this dependency
-                })
-            }));
-        }
-        Promise.all(promises).then(function () {
-            if (type == "report") { reportWorker(); } //Run the reportWorker after we've resolved all promises (ie, fetched the details of all pertinent report IDs)
-        });
-    }
     function reportWorker() {
         var elements = document.getElementsByClassName("gotoPL");
         for (var i = 0; i < elements.length; i++) {
@@ -230,7 +155,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     function refreshReportTable() {
         var sort = new Tablesort(document.getElementById('reportTable'), { descending: true });
-        //sort.refresh();
+        sort.refresh();
+        document.getElementById("spinner").style.visibility = "hidden";
     }
     function getReportData(stateAbv, stateName) {
         popupdetails(stateName);
@@ -276,61 +202,15 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         $("#gmPopupContainer").hide();
         var popupHTML;
         W.map.moveTo(this.location);
-        switch (this.popupType) {
-            case 0:
-                this.timestamp = new Date(this.timestamp);
-                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">' + this.title + '</div><hr class="myhrline"/>' +
-                    'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
-                    '<tr><td>' + this.desc + '</td></tr>' +
-                    '<tr><td>' + this.link + '</td></tr>' +
-                    '</table>' +
-                    '</div>'
-                ]);
-                break;
-            case "DESch":
-            case 1:
-                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">Scheduled Closure</div><hr class="myhrline"/>' +
-                    '<tr><td><h4>' + this.title.toString() + '</h4><hr class="myhrline"/></td></tr>' +
-                    '<tr><td>Period: ' + this.timestamp.replace(/ 12:00 AM/g, "") + '<hr class="myhrline"/></td></tr>' +
-                    '<tr><td>' + this.desc + '</td></tr>' +
-                    '<tr><td>' + this.link + 'DelDot Link</a></td></tr>' +
-                    '</table>' +
-                    '</div>'
-                ]);
-                break;
-            case "NJ":
-            case "NY":
-            case "PA":
-            case 2:
-                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
-                    '<tr><td><h4>' + this.title + '</h4><hr class="myhrline"/></td></tr>' +
-                    '<tr><td>Time: ' + this.timestamp + '<hr class="myhrline"/></td></tr>' +
-                    '<tr><td>' + this.desc + '</td></tr>' +
-                    '</table>' +
-                    '</div>'
-                ]);
-                break;
-            case "AK":
-            case 3:
-            case "LA":
-            case "MD":
-            case "OH":
-            case "WA":
-                popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
-                    '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-                    '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;"></div><hr class="myhrline"/>' +
-                    'Updated: ' + this.timestamp + '<hr class="myhrline"/></td></tr>' +
-                    '<tr><td>' + this.desc + '</td></tr>' +
-                    '</table>' +
-                    '</div>'
-                ]);
-        }
+        popupHTML = (['<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px">' +
+            '<a href="#close" id="gmCloseDlgBtn" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
+            '<table border=0><tr><td><div id="mydivheader" style="min-height: 20px;">' + this.title + '</div></div><hr class="myhrline"/>' +
+            'Updated: ' + this.timestamp.toLocaleString() + '<hr class="myhrline"/></td></tr>' +
+            '<tr><td>' + this.desc + '</td></tr>' +
+            '<tr><td>' + this.link + '</td></tr>' +
+            '</table>' +
+            '</div>'
+        ]);
         $("body").append(popupHTML);
         //Position the modal based on the position of the click event
         $("#gmPopupContainer").css({ left: document.getElementById("user-tabs").offsetWidth + W.map.getPixelFromLonLat(W.map.getCenter()).x - document.getElementById("gmPopupContainer").clientWidth - 10 });
@@ -347,9 +227,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         $("#gmPopupContainer").remove();
         $("#gmPopupContainer").hide();
         var popupHTML;
-        popupHTML = (['<div id="gmPopupContainer" style="max-width:750px;max-height:500px;margin: 1;text-align: center;padding: 5px;">' +
+        popupHTML = (['<div id="gmPopupContainer" style="max-width:750px;max-height:500px;margin:1;text-align:center;padding: 5px;">' +
             '<a href="#close" id="popupdetailsclose" title="Close" class="modalclose" style="color:#FF0000;">X</a>' +
-            '<table border=0><tr><td><div id="mydivheader"">' + stateName + ' Reports</div></td></tr>' +
+            '<table border=0><tr><td><div id="mydivheader" style="float:center">' + stateName + ' Reports <div id="spinner" class="spinner" style="float:left;position:relative;left:70%">' +
+            '<div class="bounce1" style="float:left;position:relative;left:40%"></div><div class="bounce2" style="float:left;position:relative;left:50%"></div><div class="bounce3" style="float:left;position:relative;left:60%"></div></div></td></tr>' +
             '<tr><td>' +
             '<div style="width:720px; height:450px; overflow:auto;"><table id="reportTable" border=1>' +
             '<thead><tr><td data-sort-method="none" width=30><b>PL</b></td><th width=394>Description</th><th width=100>Location</th><th data-sort-default width=210>Time</th></tr></thead>' +
