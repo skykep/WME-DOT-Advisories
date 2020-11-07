@@ -264,10 +264,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         newMarker.timestamp = parms.time;
         newMarker.events.register('click', newMarker, popup);
         newMarker.location = lonLat;
-        if (parms.link != "") {
+        if (parms.link != '') {
             newMarker.link = '<a href="' + parms.link + '" target="_blank">Publication Link</a>';
         } else {
-            newMarker.link = "";
+            newMarker.link = '';
         }
         eval(parms.state[0] + "DOTLayer.addMarker(newMarker)");
     }
@@ -596,11 +596,11 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                         break;
                     case 1:
-                        let pubLink;
-                        if (obj.str.releaseId == "-1") {
+                        var pubLink;
+                        if (obj.str.releaseId.toString() == "-1") {
                             pubLink = '';
                         } else {
-                            pubLink = 'https://deldot.gov/About/news/index.shtml?dc=release&id=' & obj.str.releaseId;
+                            pubLink = 'https://deldot.gov/About/news/index.shtml?dc=release&id=' + obj.str.releaseId;
                         }
                         promises.push(new Promise((resolve, reject) => {
                             advisories.push({
@@ -612,7 +612,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                                 lat: obj.str.latitude,
                                 type: obj.str.impactType,
                                 keyword: ['Closure'], //keywords for roadwork/construction
-                                desc: obj.str.construction,
+                                desc: obj.str.title + " - " + obj.str.construction,
                                 time: moment(new Date(obj.str.actualStartDate)).format('LLL'),
                                 link: pubLink
                             });
