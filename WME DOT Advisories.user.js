@@ -22,6 +22,7 @@
 // @connect      arcgis.com
 // @connect      deldot.gov
 // @connect      essentialintegrations.com
+// @connect      fl511.com
 // @connect      md.gov
 // @connect      mi.us
 // @connect      ohgo.com
@@ -34,8 +35,8 @@
 /* global _ */
 // ==/UserScript==
 
-let AKDOTLayer, DEDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NYDOTLayer, OHDOTLayer, PADOTLayer, WADOTLayer;
-let promisesAK, promisesDE, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNY, promisesOH, promisesPA, promisesWA;
+let AKDOTLayer, DEDOTLayer, FLDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NYDOTLayer, OHDOTLayer, PADOTLayer, WADOTLayer;
+let promisesAK, promisesDE, promisesFL, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNY, promisesOH, promisesPA, promisesWA;
 var settings;
 var state, stateLength, advisories;
 const updateMessage = "&#9658; Added MI<br>&#9658; Bug Fixes";
@@ -46,7 +47,6 @@ const Incident = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABz
 const Roadwork = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA/VpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ1dWlkOjVEMjA4OTI0OTNCRkRCMTE5MTRBODU5MEQzMTUwOEM4IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkUzRjQ0OTg5NzIzOTExRTM4ODlCRkYwNDVGNDI0RjlEIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkUzRjQ0OTg4NzIzOTExRTM4ODlCRkYwNDVGNDI0RjlEIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIElsbHVzdHJhdG9yIENDIChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmFkOTA4NmJkLTAzMGEtNDA0MS04ZTdiLWJhZGYwNWRmZDMzZiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDplNDcyMTVk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';
 const PLIcon = 'data:image/gif;base64,R0lGODlhFgAUANUAAOHh4t7e34iKj0dLU0VJUUhMVEpOVk1RWU9TW2xvdXF0enx/hZOVmcbHyVJWXVFVXFRYX1dbYl5iaTtASD5DSz1CSj9ETEFGTkNIUEVKUn6BhoSHjFpeZGBkamVpb2RobmpudGltc2ZqcG1xd2tvdaqsr0ZLUklOVU9UW3h8gdHS08nKy////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAACwALAAAAAAWABQAAAZrQJZwSCwaj8ikcskkmTpMI2JSmUxSUaFjIhJCJlkhiHjJMD2YUDECVqKsVuJk4OYGSqeDcEJRTkUACgkrKgx8SgsTH0IcExgeh0oFbUICFo5MBpRCDVkbEyNDEw9hbAYSkWEaVQRhrq+wTEEAOw==';
 const reportIcon = 'data:image/gif;base64,R0lGODlhFAAUALMAANcsLNgvL9g4OAMBAc5RUcZVVW1tbQAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAgALAAAAAAUABQAAARdEKFDqz0y6zO695S2FUBpAkNliBNxmmnFHu6LXmtG2+iXbjWeiYDRuXw2IhAg+CSLkp1wCG31fB6A0jilLrva6g7r3EaDU7MVEGi72yX1mNwJj8CAgpiOFV/+FhIRADs=';
-const NJURLList = 'https://511nj.org/API/client/Map/getEventData';
 const NJURLDetail = 'https://511nj.org/API/client/Map/getEventPopupData?EventId=';
 const NotNY = ['Pennsylvania Statewide', 'New Jersey Statewide', 'Connecticut Statewide'];
 const NJConstruction = ['Construction', 'ScheduledConstruction'];
@@ -80,6 +80,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<tr><td style="text-align:center"><b>Enable</b></td><td style="text-align"><b>State</b></td><td width=30><b>Rpt</b></td></tr>',
             '<tr><td><input type="checkbox" id="chkAKDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>AK</td><td><div class=DOTreport data-report="report" data-state="Alaska" id="AK"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>DE</td><td><div class=DOTreport data-report="report" data-state="Delaware" id="DE"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td><input type="checkbox" id="chkFLDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>FL</td><td><div class=DOTreport data-report="report" data-state="Florida" id="FL"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkLADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>LA</td><td><div class=DOTreport data-report="report" data-state="Louisiana" id="LA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkMDDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>MD</td><td><div class=DOTreport data-report="report" data-state="Maryland" id="MD"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkMIDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>MI</td><td><div class=DOTreport data-report="report" data-state="Michigan" id="MI"><img src=' + reportIcon + '></div></td></tr>',
@@ -318,10 +319,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
             setChecked('chk' + state + 'DOTEnabled', eval('settings.' + state + 'DOTEnabled'));
         }
-        //Move the FixUI zoom bar to the front so DOT Advisory icons do not sit in front of it
-        if (document.getElementById('WMEFUzoom') != null) {
-            //document.getElementById('WMEFUzoom').style.zIndex = "4000";
-        }
         //Build the layers for the selected states
         for (var i = 0; i < stateLength; i++) {
             state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
@@ -334,7 +331,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             document.getElementsByClassName("DOTreport")[i].addEventListener('click', function (e) { getReportData(this.getAttribute("id"), this.getAttribute("data-state")); }, false);
         }
         //Refresh selected states when WME's refresh button is clicked
-        $(".overlay-button").click(function () {
+        document.getElementsByClassName("reload-button-region")[0].addEventListener('click', function (e) {
             for (var i = 0; i < stateLength; i++) {
                 state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
                 if (document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked) { eval('W.map.removeLayer(' + state + 'DOTLayer)'); }
@@ -513,6 +510,67 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             },
             URL: ['https://tmc.deldot.gov/json/advisory.json', 'https://deldot.gov/json/str.json']
         },
+        FL: {
+            data(res, index) {
+                let resultText = [res.item2, res.item2];
+                return (resultText[index]);
+            },
+            filter(index) {
+                let filtertext = [true, true];
+                return (filtertext[index]);
+            },
+            scheme(obj, index) {
+                switch (index) {
+                    case 0:
+                        promisesFL.push(new Promise((resolve, reject) => {
+                            getFeed(config.FL.detailURL[0] + obj.itemId.replace("/ /g","%20"), async function (result) {
+                                var eventObj = JSON.parse(result.responseText);
+                                if (['Alllanesblocked','On-rampclosed','Off-rampclosed'].includes(eventObj.lanes.lanesAffected.replace(/ /g,""))) {
+                                    advisories.push({
+                                        state: ['FL', 'Florida'],
+                                        id: eventObj.id.id,
+                                        popupType: 0,
+                                        title: eventObj.areas.area5.areaLang1,
+                                        lon: eventObj.coordinates.locationLongitude/1000000,
+                                        lat: eventObj.coordinates.locationLatitude/1000000,
+                                        type: eventObj.details.detailLang1.eventTypeName,
+                                        keyword: ['Construction'], //keywords for roadwork/construction
+                                        desc: eventObj.details.detailLang1.eventDescription,
+                                        time: moment(new Date(eventObj.dates.lastUpdated)).format('LLL'),
+                                        link: ''
+                                    });
+                                }
+                                resolve();
+                            });
+                        }));
+                        break;
+                    case 1:
+                        promisesFL.push(new Promise((resolve, reject) => {
+                            getFeed(config.FL.detailURL[1] + obj.itemId.replace("/ /g","%20"), async function (result) {
+                                var eventObj = JSON.parse(result.responseText);
+                                if (['Alllanesblocked','On-rampclosed','Off-rampclosed'].includes(eventObj.lanes.lanesAffected.replace(/ /g,""))) {
+                                    advisories.push({
+                                        state: ['FL', 'Florida'],
+                                        id: eventObj.id.id,
+                                        popupType: 0,
+                                        title: eventObj.areas.area5.areaLang1,
+                                        lon: eventObj.coordinates.locationLongitude/1000000,
+                                        lat: eventObj.coordinates.locationLatitude/1000000,
+                                        type: eventObj.details.detailLang1.eventTypeName,
+                                        keyword: ['Constructions'], //keywords for roadwork/construction
+                                        desc: eventObj.details.detailLang1.eventDescription,
+                                        time: moment(new Date(eventObj.dates.lastUpdated)).format('LLL'),
+                                        link: ''
+                                    });
+                                }
+                                resolve();
+                            });
+                        }));
+                }
+            },
+            URL: ['https://fl511.com/map/mapIcons/Incidents?_=1604955914474','https://fl511.com/map/mapIcons/Construction?_=1604965926997'],
+            detailURL: ['https://fl511.com/map/data/Incidents/','https://fl511.com/map/data/Construction/']
+        },
         LA: {
             data(res, index) {
                 let resultText = [res];
@@ -668,7 +726,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                                 state: ['NJ', 'New Jersey'],
                                 id: eventObj[0].markerId,
                                 popupType: 0,
-                                title: eventObj[0].markerId + eventObj[0].County,
+                                title: eventObj[0].County,
                                 lon: eventObj[0].Longitude,
                                 lat: eventObj[0].Latitude,
                                 type: eventObj[0].CategoryName,
