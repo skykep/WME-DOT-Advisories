@@ -35,9 +35,9 @@
 /* global _ */
 // ==/UserScript==
 
-let AKDOTLayer, DEDOTLayer, FLDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NYDOTLayer, OHDOTLayer, PADOTLayer, WADOTLayer;
-let promisesAK, promisesDE, promisesFL, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNY, promisesOH, promisesPA, promisesWA;
-let advisoriesAK, advisoriesDE, advisoriesFL, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNY, advisoriesOH, advisoriesPA, advisoriesWA;
+let AKDOTLayer, DEDOTLayer, FLDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, WADOTLayer;
+let promisesAK, promisesDE, promisesFL, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNY, promisesOH, promisesOR, promisesPA, promisesWA;
+let advisoriesAK, advisoriesDE, advisoriesFL, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesWA;
 var settings;
 var state, stateLength, advisories;
 const updateMessage = "&#9658; Fixed z-index for popups";
@@ -89,6 +89,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<tr><td><input type="checkbox" id="chkNJDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>NJ</td><td><div class=DOTreport data-report="report" data-state="New Jersey" id="NJ"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkNYDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>NY</td><td><div class=DOTreport data-report="report" data-state="New York" id="NY"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkOHDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>OH</td><td><div class=DOTreport data-report="report" data-state="Ohio" id="OH"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td><input type="checkbox" id="chkORDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>OR</td><td><div class=DOTreport data-report="report" data-state="Oregon" id="OR"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>PA</td><td><div class=DOTreport data-report="report" data-state="Pennsylvania" id="PA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkWADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WA</td><td><div class=DOTreport data-report="report" data-state="Washington" id="WA"><img src=' + reportIcon + '></div></td></tr>',
             '</table>',
@@ -814,6 +815,40 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 }))
             },
             URL: ['https://api.ohgo.com/roadmarkers/TrafficSpeedAndAlertMarkers']
+        },
+        OR: {
+            data(res, index) {
+                let resultText = [res.features];
+                return (resultText[index]);
+            },
+            filter(index) {
+                let filtertext = [true];
+                return (filtertext[index]);
+            },
+            scheme(obj, index) {
+                let x, y;
+                var lonlat = obj.geometry.paths[0][0];
+                //alert(lonlat.toString().split(",")[0]);
+                promisesOR.push(new Promise((resolve, reject) => {
+                    x = obj.geometry.paths[0][0].toString().split(",")[0];
+                    y = obj.geometry.paths[0][0].toString().split(",")[1];
+                    advisoriesOR.push({
+                        state: ['OR', 'Oregon'],
+                        id: obj.attributes.OBJECTID,
+                        popupType: 0,
+                        title: obj.attributes.FROM_TO,
+                        lon: x,
+                        lat: y,
+                        type: obj.attributes.CLOSURE_EFFECT,
+                        keyword: ['Street'], //keywords for roadwork/construction
+                        desc: obj.attributes.FROM_TO + " - " + obj.attributes.REMARKS,
+                        time: moment(new Date(obj.attributes.LAST_EDITED_DATE)).format('LLL'),
+                        link: ''
+                    });
+                    resolve();
+                }))
+            },
+            URL: ['https://services.arcgis.com/kIA6yS9KDGqZL7U3/ArcGIS/rest/services/RoadWork/FeatureServer/1/query?where=objectid+like+%27%25%27&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=4326&datumTransformation=&applyVCSProjection=true&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=true&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=']
         },
         PA: {
             data(res, index) {
