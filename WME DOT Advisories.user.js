@@ -468,11 +468,11 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         },
         DE: {
             data(res, index) {
-                let resultText = [res.advisories, res];
+                let resultText = [res.advisories, res, res.features];
                 return (resultText[index]);
             },
             filter(index) {
-                let filtertext = [true, '(resultObj[i].str.impactType == "Closure") || ((resultObj[i].str.impactType == "Restriction") && ((resultObj[i].str.construction.toUpperCase().includes("AMP CLOS") || (resultObj[i].str.construction.toUpperCase().includes("ROAD CLOS")))))'];
+                let filtertext = [true, '(resultObj[i].str.impactType == "Closure") || ((resultObj[i].str.impactType == "Restriction") && ((resultObj[i].str.construction.toUpperCase().includes("AMP CLOS") || (resultObj[i].str.construction.toUpperCase().includes("ROAD CLOS")))))', true];
                 return (filtertext[index]);
             },
             scheme(obj, index) {
@@ -520,9 +520,60 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                             });
                             resolve();
                         }))
+                        break;
+                    case 2:
+                        var direction, WorkType;
+                        switch (obj.attributes.direction) {
+                            case 'ONE_DIRECTION':
+                                direction = "One Way from ";
+                                break;
+                            case 'BOTH_DIRECTIONS':
+                                direction = "Both Ways between ";
+                        }
+                        switch (obj.attributes.WorkType) {
+                            case "1":
+                                WorkType = "Gas Work";
+                                break;
+                            case "2":
+                                WorkType = "Street Work (city)";
+                                break;
+                            case "3":
+                                WorkType = "Street Work (DelDOT)";
+                                break;
+                            case "4":
+                                WorkType = "Water Work";
+                                break;
+                            case "5":
+                                WorkType = "Work (other)";
+                                break;
+                            case "6":
+                                WorkType = "Sewer Work";
+                        }
+                        if (obj.attributes.street != null) {
+                            var originShift = 2.0 * Math.PI * 6378137.0 / 2.0;
+                            var lon = (obj.geometry.paths[0][0][0] / originShift) * 180.0;
+                            var lat = (obj.geometry.paths[0][0][1] / originShift) * 180.0;
+                            lat = 180.0 / Math.PI * (2.0 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
+                            promisesDE.push(new Promise((resolve, reject) => {
+                                advisoriesDE.push({
+                                    state: ['DE', 'Delaware'],
+                                    id: obj.attributes.OBJECTID,
+                                    popupType: 0,
+                                    title: 'Wilmington Road Closures',
+                                    lon: lon,
+                                    lat: lat,
+                                    type: 'Closure',
+                                    keyword: ['Closure'], //keywords for roadwork/construction
+                                    desc: WorkType + ' - ' + direction + obj.attributes.StartingFrom + ' to ' + obj.attributes.EndingAt + '<br> from ' + moment(new Date(obj.attributes.starttime)).format('LLL') + ' to ' + moment(new Date(obj.attributes.endtime)).format('LLL'),
+                                    time: moment(new Date(obj.attributes.EditDate)).format('LLL'),
+                                    link: ''
+                                });
+                                resolve();
+                            }))
+                        }
                 }
             },
-            URL: ['https://tmc.deldot.gov/json/advisory.json', 'https://deldot.gov/json/str.json']
+            URL: ['https://tmc.deldot.gov/json/advisory.json', 'https://deldot.gov/json/str.json', 'https://services.arcgis.com/hQ3wdpbjO3fPf612/ArcGIS/rest/services/RoadClosures_5b3e88c5556242dfa6e058198be7eb52_public/FeatureServer/1/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=standard&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=']
         },
         FL: {
             data(res, index) {
@@ -1012,7 +1063,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         var originShift = 2.0 * Math.PI * 6378137.0 / 2.0;
                         var lon = (obj.geometry.x / originShift) * 180.0;
                         var lat = (obj.geometry.y / originShift) * 180.0;
-                        lat = 180.0 / Math.PI * (2.0 * Math.atan( Math.exp( lat * Math.PI / 180.0)) - Math.PI / 2.0);
+                        lat = 180.0 / Math.PI * (2.0 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
                         var timing;
                         if (obj.attributes.END_DATE == null) {
                             timing = moment(new Date(obj.attributes.START_DATE)).format('LL');
@@ -1040,7 +1091,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                 }
             },
-            URL: ['http://scripts.essentialintegrations.com/PA','https://services5.arcgis.com/9n3LUAMi3B692MBL/arcgis/rest/services/Street_Closures_for_GIS_2017/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=102100&resultOffset=0&resultRecordCount=2000']
+            URL: ['http://scripts.essentialintegrations.com/PA', 'https://services5.arcgis.com/9n3LUAMi3B692MBL/arcgis/rest/services/Street_Closures_for_GIS_2017/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=102100&resultOffset=0&resultRecordCount=2000']
         },
         WA: {
             data(res, index) {
