@@ -37,9 +37,9 @@
 /* global _ */
 // ==/UserScript==
 
-let AKDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, WADOTLayer;
-let promisesAK, promisesDE, promisesFL, promisesGA, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesWA;
-let advisoriesAK, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesWA;
+let AKDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, ILDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, WADOTLayer;
+let promisesAK, promisesDE, promisesFL, promisesGA, promisesIL, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesWA;
+let advisoriesAK, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIL, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesWA;
 var settings;
 var state, stateLength, advisories;
 const updateMessage = "&#9658; Added Wilmington closures";
@@ -85,6 +85,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<tr><td><input type="checkbox" id="chkDEDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>DE</td><td><div class=DOTreport data-report="report" data-state="Delaware" id="DE"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkFLDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>FL</td><td><div class=DOTreport data-report="report" data-state="Florida" id="FL"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkGADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>GA</td><td><div class=DOTreport data-report="report" data-state="Georgia" id="GA"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td><input type="checkbox" id="chkILDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>IL</td><td><div class=DOTreport data-report="report" data-state="Illinois" id="IL"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkLADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>LA</td><td><div class=DOTreport data-report="report" data-state="Louisiana" id="LA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkMDDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>MD</td><td><div class=DOTreport data-report="report" data-state="Maryland" id="MD"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkMIDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>MI</td><td><div class=DOTreport data-report="report" data-state="Michigan" id="MI"><img src=' + reportIcon + '></div></td></tr>',
@@ -689,6 +690,69 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 }
             },
             URL: ['https://ga.cdn.iteris-atis.com/geojson/icons/metadata/icons.construction.geojson', 'https://ga.cdn.iteris-atis.com/geojson/icons/metadata/icons.incident.geojson']
+        },
+        IL: {
+            data(res, index) {
+                let resultText = [res.features, res.features];
+                return (resultText[index]);
+            },
+            filter(index) {
+                let filtertext = [true, true];
+                return (filtertext[index]);
+            },
+            scheme(obj, index) {
+                switch (index) {
+                    case 0:
+                        promisesIL.push(new Promise((resolve, reject) => {
+                            advisoriesIL.push({
+                                state: ['IL', 'Illinois'],
+                                id: obj.attributes.OBJECTID,
+                                popupType: 0,
+                                title: obj.attributes.NearTown,
+                                lon: obj.geometry.x,
+                                lat: obj.geometry.y,
+                                type: "Construction",
+                                keyword: ['Construction'], //keywords for roadwork/construction
+                                desc: 'Closed from ' + obj.attributes.Location + '<br> from ' + moment(new Date(obj.attributes.StartDate)).format('LLL') + ' to ' + moment(new Date(obj.attributes.EndDate)).format('LLL'),
+                                time: moment(new Date(obj.attributes.StartDate)).format('LLL'),
+                                link: obj.attributes.WebAddress
+                            });
+                            resolve();
+                        }))
+                        break;
+                    case 1:
+                        var DateUpdate;
+                        if (obj.attributes.DateUpdate == null) {
+                            DateUpdate = moment(new Date(obj.attributes.DateEntered)).format('LLL');
+                        } else {
+                            DateUpdate = moment(new Date(obj.attributes.DateUpdate)).format('LLL');
+                        }
+                        var originShift = 2.0 * Math.PI * 6378137.0 / 2.0;
+                        var lon = (obj.geometry.paths[0][0][0] / originShift) * 180.0;
+                        var lat = (obj.geometry.paths[0][0][1] / originShift) * 180.0;
+                        lat = 180.0 / Math.PI * (2.0 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
+                        if (obj.attributes.SuggestionToMotorist.includes("Closed")) {
+                            promisesIL.push(new Promise((resolve, reject) => {
+                                advisoriesIL.push({
+                                    state: ['IL', 'Illinois'],
+                                    id: obj.attributes.OBJECTID,
+                                    popupType: 0,
+                                    title: obj.attributes.County,
+                                    lon: lon,
+                                    lat: lat,
+                                    type: "Construction",
+                                    keyword: ['Construction'], //keywords for roadwork/construction
+                                    desc: 'Closed from ' + obj.attributes.Location + '<br> from ' + moment(new Date(obj.attributes.StartDate)).format('LLL') + ' to ' + moment(new Date(obj.attributes.EndDate)).format('LLL'),
+                                    time: DateUpdate,
+                                    link: obj.attributes.WebAddress
+                                });
+                                resolve();
+                            }))
+                        }
+                }
+            },
+
+            URL: ['https://services2.arcgis.com/aIrBD8yn1TDTEXoz/ArcGIS/rest/services/ClosureIncidents/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=', 'https://services2.arcgis.com/aIrBD8yn1TDTEXoz/ArcGIS/rest/services/RoadConstruction_View/FeatureServer/0/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_Meter&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=false&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=']
         },
         LA: {
             data(res, index) {
