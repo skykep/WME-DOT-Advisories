@@ -1376,30 +1376,24 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 if (obj.EventType == 'closures')
                 {
                     linkvar = 'https://511wi.gov/map#ConstructionClosures-' + obj.ID.replace(' ', '%20');
-
                     new Promise((resolve, reject) => {
                         getFeed('https://511wi.gov/map/data/ConstructionClosures/' + obj.ID.replace(' ', '%20'), function (result) {
                             let resultObj = [];
                             resultObj = JSON.parse(result.responseText);
                             eText = resultObj.details.detailLang1.eventDescription + ' on ' + resultObj.location.linkDesignator + ' at ' + resultObj.location.crossStreetName
-                            //eText = resultObj.eventComment;
                             resolve();
                         });
                     }).then((result) => addObj());
-
-                    // getFeed('https://511wi.gov/map/data/ConstructionClosures/' + obj.ID.replace(' ', '%20'), function (result) {
-                    //     let resultObj = [];
-                    //     resultObj = JSON.parse(result.responseText);
-                    //     eText = resultObj.eventComment;
-                    // });
                 }
                 else if (obj.EventType == 'accidentsAndIncidents')
                 {
                     linkvar = 'https://511wi.gov/map#Incidents-' + obj.ID.replace(' ', '%20');
                     addObj();
                 }
-
-
+                else
+                {
+                    addObj();
+                }
             },
             URL: ['http://scripts.essentialintegrations.com/WI']
         },
