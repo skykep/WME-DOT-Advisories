@@ -19,6 +19,7 @@
 // @connect      511nj.org
 // @connect      511ny.org
 // @connect      511pa.com
+// @connect      511wi.gov
 // @connect      arcgis.com
 // @connect      deldot.gov
 // @connect      essentialintegrations.com
@@ -38,9 +39,9 @@
 /* global _ */
 // ==/UserScript==
 
-let AKDOTLayer, CTDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, ILDOTLayer, INDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, TXDOTLayer, WADOTLayer, WVDOTLayer;
-let promisesAK, promisesCT, promisesDE, promisesFL, promisesGA, promisesIL, promisesIN, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesTX, promisesWA, promisesWV;
-let advisoriesAK, advisoriesCT, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIL, advisoriesIN, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesTX, advisoriesWA, advisoriesWV;
+let AKDOTLayer, CTDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, ILDOTLayer, INDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, TXDOTLayer, WADOTLayer, WIDOTLayer, WVDOTLayer;
+let promisesAK, promisesCT, promisesDE, promisesFL, promisesGA, promisesIL, promisesIN, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesTX, promisesWA, promisesWI, promisesWV;
+let advisoriesAK, advisoriesCT, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIL, advisoriesIN, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesTX, advisoriesWA, advisoriesWI, advisoriesWV;
 var settings;
 var state, stateLength, advisories;
 const updateMessage = "&#9658; Added CT (with markers)";
@@ -109,6 +110,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<tr><td><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>PA</td><td><div class=DOTreport data-report="report" data-state="Pennsylvania" id="PA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkTXDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>TX (Houston)</td><td><div class=DOTreport data-report="report" data-state="Texas" id="TX"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkWADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WA</td><td><div class=DOTreport data-report="report" data-state="Washington" id="WA"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td><input type="checkbox" id="chkWIDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WI</td><td><div class=DOTreport data-report="report" data-state="Wisconsin" id="WI"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkWVDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WV</td><td><div class=DOTreport data-report="report" data-state="West Virginia" id="WV"><img src=' + reportIcon + '></div></td></tr>',
             '</table>',
             '</div></div>'
@@ -1316,6 +1318,36 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 }))
             },
             URL: ['http://scripts.essentialintegrations.com/WA']
+        },
+        WI: {
+            data(res, index) {
+                let resultText = [res];
+                return (resultText[index]);
+            },
+            filter(index) {
+                let filtertext = ['(resultObj[i].EventType == "roadwork" || resultObj[i].EventType == "closures")'];
+                return (filtertext[index]);
+            },
+            scheme(obj, index) {
+                let unixtime = obj.LastUpdated;
+                promisesWI.push(new Promise((resolve, reject) => {
+                    advisoriesWI.push({
+                        state: ['WI', 'Wisconsin'],
+                        id: obj.ID,
+                        popupType: 0,
+                        title: obj.County,
+                        lon: obj.Longitude,
+                        lat: obj.Latitude,
+                        type: obj.EventType,
+                        keyword: ['Construction', 'Closures'], //keywords for roadwork/construction
+                        desc: obj.Description,
+                        time: moment(new Date(unixtime)).format('LLL'),
+                        link: ''
+                    });
+                    resolve();
+                }))
+            },
+            URL: ['http://scripts.essentialintegrations.com/WI']
         },
         WV: {
             data(res, index) {
