@@ -1424,9 +1424,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            additionalPopupInfo(obj, index)
-            {
-            },
             URL: ['http://scripts.essentialintegrations.com/WV']
         }
     };
