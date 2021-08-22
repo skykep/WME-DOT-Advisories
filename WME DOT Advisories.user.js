@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.41
+// @version      1.42
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -1331,7 +1331,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             scheme(obj, index) {
                 let unixtime = obj.LastUpdated;
                 let linkvar = '';
-                if (obj.EventType == 'closures' || obj.EventType == 'roadwork')
+                if (obj.EventType == 'closures')
                 {
                     linkvar = 'https://511wi.gov/map#ConstructionClosures-' + obj.ID.replace(' ', '%20');
                 }
