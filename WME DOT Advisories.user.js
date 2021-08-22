@@ -1331,7 +1331,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             scheme(obj, index) {
                 let unixtime = obj.LastUpdated;
                 let linkvar = '';
-                if (obj.EventType == 'closures')
+                if (obj.EventType == 'closures' || obj.EventType == 'roadwork')
                 {
                     linkvar = 'https://511wi.gov/map#ConstructionClosures-' + obj.ID.replace(' ', '%20');
                 }
