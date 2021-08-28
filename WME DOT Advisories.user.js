@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.49
+// @version      1.50
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -516,8 +516,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 return (filtertext[index]);
             },
             scheme(obj, index) {
-                switch (index) {
-                    case 0:
+
                         promisesAZ.push(new Promise((resolve, reject) => {
                             advisoriesAZ.push({
                                 state: ['AZ', 'Arizona'],
@@ -534,62 +533,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                             });
                             resolve();
                         }))
-                        break;
-                    case 1:
-                        promisesAZ.push(new Promise((resolve, reject) => {
-                            advisoriesAZ.push({
-                                state: ['AZ', 'Arizona'],
-                                id: obj.attributes.OBJECTID,
-                                popupType: 0,
-                                title: obj.attributes.Purpose,
-                                lon: obj.geometry.x,
-                                lat: obj.geometry.y,
-                                type: 'roadwork',
-                                keyword: ['roadwork'], //keywords for roadwork/construction
-                                desc: "(Phoenix) From " + obj.attributes.From_Street + " to " + obj.attributes.To_Street + " / " + "From " + moment(new Date(obj.attributes.StartDate)).format('LLL') + " to " + moment(new Date(obj.attributes.EndDate)).format('LLL'),
-                                time: moment(Date.now()).format('LLL'),
-                                link: ''
-                            });
-                            resolve();
-                        }))
-                        break;
-                    case 2:
-                        promisesAZ.push(new Promise((resolve, reject) => {
-                            advisoriesAZ.push({
-                                state: ['AZ', 'Arizona'],
-                                id: obj.attributes.OBJECTID,
-                                popupType: 0,
-                                title: obj.attributes.Purpose,
-                                lon: obj.geometry.paths[0][0][0],
-                                lat: obj.geometry.paths[0][0][1],
-                                type: 'roadwork',
-                                keyword: ['roadwork'], //keywords for roadwork/construction
-                                desc: "(Phoenix) From " + obj.attributes.From_Street + " to " + obj.attributes.To_Street + " / " + "From " + moment(new Date(obj.attributes.StartDate)).format('LLL') + " to " + moment(new Date(obj.attributes.EndDate)).format('LLL'),
-                                time: moment(Date.now()).format('LLL'),
-                                link: ''
-                            });
-                            resolve();
-                        }))
-                        break;
-                    case 3:
-                        promisesAZ.push(new Promise((resolve, reject) => {
-                            advisoriesAZ.push({
-                                state: ['AZ', 'Arizona'],
-                                id: obj.attributes.OBJECTID,
-                                popupType: 0,
-                                title: obj.attributes.Purpose,
-                                lon: obj.geometry.x,
-                                lat: obj.geometry.y,
-                                type: 'roadwork',
-                                keyword: ['roadwork'], //keywords for roadwork/construction
-                                desc: "(Phoenix) From " + obj.attributes.From_Street + " to " + obj.attributes.To_Street + " / " + "From " + moment(new Date(obj.attributes.StartDate)).format('LLL') + " to " + moment(new Date(obj.attributes.EndDate)).format('LLL'),
-                                time: moment(Date.now()).format('LLL'),
-                                link: ''
-                            });
-                            resolve();
-                        }))
-                        break;
-                }
             },
             URL: ['http://scripts.essentialintegrations.com/AZ', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/0/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=300&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/1/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=200&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/2/query?f=json&where=1%3D1&returnGeometry=true&outSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset=0&resultRecordCount=25']
         },
