@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.50
+// @version      1.51
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -32,6 +32,7 @@
 // @connect      iteris-atis.com
 // @connect      carsprogram.org
 // @connect      phoenix.gov
+// @connect      511virginia.org
 /* global OpenLayers */
 /* global W */
 /* global WazeWrap */
@@ -40,9 +41,9 @@
 /* global _ */
 // ==/UserScript==
 
-let AKDOTLayer, AZDOTLayer, CTDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, ILDOTLayer, INDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, TXDOTLayer, WADOTLayer, WIDOTLayer, WVDOTLayer;
-let promisesAK, promisesAZ, promisesCT, promisesDE, promisesFL, promisesGA, promisesIL, promisesIN, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesTX, promisesWA, promisesWI, promisesWV;
-let advisoriesAK, advisoriesAZ, advisoriesCT, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIL, advisoriesIN, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesTX, advisoriesWA, advisoriesWI, advisoriesWV;
+let AKDOTLayer, AZDOTLayer, CTDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, ILDOTLayer, INDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, TXDOTLayer, VADOTLayer, WADOTLayer, WIDOTLayer, WVDOTLayer;
+let promisesAK, promisesAZ, promisesCT, promisesDE, promisesFL, promisesGA, promisesIL, promisesIN, promisesLA, promisesMD, promisesMI, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesTX, promisesVA, promisesWA, promisesWI, promisesWV;
+let advisoriesAK, advisoriesAZ, advisoriesCT, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIL, advisoriesIN, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesTX, advisoriesVA, advisoriesWA, advisoriesWI, advisoriesWV;
 let settings;
 let state, stateLength, advisories;
 const updateMessage = "&#9658; Updated AZ";
@@ -111,6 +112,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '<tr><td><input type="checkbox" id="chkORDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>OR</td><td><div class=DOTreport data-report="report" data-state="Oregon" id="OR"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkPADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>PA</td><td><div class=DOTreport data-report="report" data-state="Pennsylvania" id="PA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkTXDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>TX (Houston)</td><td><div class=DOTreport data-report="report" data-state="Texas" id="TX"><img src=' + reportIcon + '></div></td></tr>',
+            '<tr><td><input type="checkbox" id="chkVADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>VA</td><td><div class=DOTreport data-report="report" data-state="Virginia" id="VA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkWADOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WA</td><td><div class=DOTreport data-report="report" data-state="Washington" id="WA"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkWIDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WI</td><td><div class=DOTreport data-report="report" data-state="Wisconsin" id="WI"><img src=' + reportIcon + '></div></td></tr>',
             '<tr><td><input type="checkbox" id="chkWVDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>WV</td><td><div class=DOTreport data-report="report" data-state="West Virginia" id="WV"><img src=' + reportIcon + '></div></td></tr>',
@@ -127,7 +129,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     function buildDOTAdvLayers(state) {
         eval(state.substring(0, 2) + 'DOTLayer = new OpenLayers.Layer.Markers("' + state.substring(0, 2) + 'DOTLayer")');
         W.map.addLayer(eval(state.substring(0, 2) + 'DOTLayer'));
-        W.map.getOLMap().setLayerIndex(eval(state.substring(0, 2) + 'DOTLayer'), 10);
+        W.map.getOLMap().setLayerIndex(eval(state.substring(0, 2) + 'DOTLayer'), 0);
     }
     function getFeed(url, callback) {
         GM_xmlhttpRequest({
@@ -144,6 +146,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         var result = response;
         setTimeout(function () { callback(result) }, 150);
     }
+    const timer = ms => new Promise(res => setTimeout(res, ms))
     function getAdvisories(state, stateAbv, type) {
         eval('promises' + stateAbv + ' = []');
         eval('advisories' + stateAbv + ' = []');
@@ -153,31 +156,32 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 getFeed(state.URL[j], function (result) {
                     let resultObj = [];
                     resultObj = state.data(JSON.parse(result.responseText), j);
-                    for (let i = 0; i < resultObj.length; i++) {
-                        if (eval(state.filter(j))) {
-                            state.scheme(resultObj[i], j);
-                        }
-                        //console.log(i + " - " + resultObj.length);
-                        if (i == (resultObj.length - 1)) {
-                            resolve();
+                    async function innerLoop() {
+                        for (let i = 0; i < resultObj.length; i++) {
+                            if (eval(state.filter(j))) {
+                                state.scheme(resultObj[i], j);
+                            }
+                            if (i == (resultObj.length - 1)) {
+                                resolve();
+                            }
+                            await timer(1);
                         }
                     }
+                    innerLoop();
                 });
             })
-            //eval('promises' + stateAbv + '.push(thispromise)');
             thesepromises.push(thispromise);
         }
         Promise.all(thesepromises).then(function () {
-            //console.log("got promises..." + type);
             setTimeout(function () { promiseWorker(stateAbv, type) }, 1000);
+            console.log("waiting for the promises to resolve...");
         })
     }
     function promiseWorker(stateAbv, type) {
         let thisadvisory = eval("advisories" + stateAbv);
-        //console.log(eval('promises' + stateAbv + '.length') + " promises");
         Promise.all(eval('promises' + stateAbv))
             .then(function () {
-                //console.log(thisadvisory.length + " thisadvisory");
+                console.log("we got them...");
                 for (let i = 0; i < thisadvisory.length; i++) {
                     if (type == "report") {
                         let parms = thisadvisory[i];
@@ -517,22 +521,22 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             },
             scheme(obj, index) {
 
-                        promisesAZ.push(new Promise((resolve, reject) => {
-                            advisoriesAZ.push({
-                                state: ['AZ', 'Arizona'],
-                                id: obj.ID,
-                                popupType: 0,
-                                title: obj.RoadwayName,
-                                lon: obj.Longitude,
-                                lat: obj.Latitude,
-                                type: obj.EventType,
-                                keyword: ['roadwork'], //keywords for roadwork/construction
-                                desc: obj.Description,
-                                time: moment(new Date(obj.LastUpdated * 1000)).format('LLL'),
-                                link: ''
-                            });
-                            resolve();
-                        }))
+                promisesAZ.push(new Promise((resolve, reject) => {
+                    advisoriesAZ.push({
+                        state: ['AZ', 'Arizona'],
+                        id: obj.ID,
+                        popupType: 0,
+                        title: obj.RoadwayName,
+                        lon: obj.Longitude,
+                        lat: obj.Latitude,
+                        type: obj.EventType,
+                        keyword: ['roadwork'], //keywords for roadwork/construction
+                        desc: obj.Description,
+                        time: moment(new Date(obj.LastUpdated * 1000)).format('LLL'),
+                        link: ''
+                    });
+                    resolve();
+                }))
             },
             URL: ['http://scripts.essentialintegrations.com/AZ', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/0/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=300&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/1/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=200&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/2/query?f=json&where=1%3D1&returnGeometry=true&outSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset=0&resultRecordCount=25']
         },
@@ -1071,9 +1075,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             },
             scheme(obj, index) {
                 promisesNJ.push(new Promise((resolve, reject) => {
-                    setTimeout(function () { resolve() }, 4000);
-                    getFeed(config.NJ.detailURL[0] + obj.properties.EventID, async function (result) {
+                    //setTimeout(function () { resolve() }, 4000);
+                    getFeed(config.NJ.detailURL[0] + obj.properties.EventID, function (result) {
                         var eventObj = JSON.parse(result.responseText).Data;
+                        console.log(result.status);
                         if (((eventObj[0].FullText.toUpperCase()).includes("ALL LANES CLOSE") || (eventObj[0].FullText.toUpperCase()).includes("RAMP CLOSE")) && ((eventObj[0].FullText).includes("NYSDOT") != true)) {
                             advisoriesNJ.push({
                                 state: ['NJ', 'New Jersey'],
@@ -1089,7 +1094,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                                 link: ''
                             });
                         }
-                        //resolve();
+                        resolve(true);
                     });
                 }));
             },
@@ -1327,6 +1332,95 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 }
             },
             URL: ['http://scripts.essentialintegrations.com/PA', 'https://services5.arcgis.com/9n3LUAMi3B692MBL/arcgis/rest/services/Street_Closures_for_GIS_2017/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=102100&resultOffset=0&resultRecordCount=2000']
+        },
+        VA: {
+            data(res, index) {
+                let resultText = [res.features, res.features, res.features];
+                return (resultText[index]);
+            },
+            filter(index) {
+                let filtertext = [true, true, true];
+                return (filtertext[index]);
+            },
+            scheme(obj, index) {
+                switch (index) {
+                    case 0:
+                        promisesVA.push(new Promise((resolve, reject) => {
+                            let lat = obj.geometry.coordinates[1];
+                            let lon = obj.geometry.coordinates[0];
+                            let thisID = obj.id;
+                            getFeed(config.VA.detailURL + obj.id, async function (result) {
+                                var eventObj = JSON.parse(result.responseText);
+                                if (eventObj[thisID].display_text.toLowerCase().includes("all west lanes are closed")) {
+                                    advisoriesVA.push({
+                                        state: ['VA', 'Virginia'],
+                                        id: eventObj[thisID].fid,
+                                        popupType: 0,
+                                        title: "Construction",
+                                        lon: lon,
+                                        lat: lat,
+                                        type: eventObj[thisID].type,
+                                        keyword: ['Constructions'], //keywords for roadwork/construction
+                                        desc: eventObj[thisID].display_text,
+                                        time: moment(new Date(eventObj[thisID].update * 1000)).format('LLL'),
+                                        link: ''
+                                    });
+                                }
+                                resolve();
+                            });
+                        }));
+                        break;
+                    case 1:
+                        promisesVA.push(new Promise((resolve, reject) => {
+                            let lat = obj.geometry.coordinates[1];
+                            let lon = obj.geometry.coordinates[0];
+                            let thisID = obj.id;
+                            getFeed(config.VA.detailURL + obj.id, async function (result) {
+                                var eventObj = JSON.parse(result.responseText);
+                                advisoriesVA.push({
+                                    state: ['VA', 'Virginia'],
+                                    id: eventObj[thisID].fid,
+                                    popupType: 0,
+                                    title: "High Impact Incident",
+                                    lon: lon,
+                                    lat: lat,
+                                    type: eventObj[thisID].type,
+                                    keyword: ['Constructions'], //keywords for roadwork/construction
+                                    desc: eventObj[thisID].display_text,
+                                    time: moment(new Date(eventObj[thisID].update * 1000)).format('LLL'),
+                                    link: ''
+                                });
+                                resolve();
+                            });
+                        }));
+                        break;
+                    case 2:
+                        promisesVA.push(new Promise((resolve, reject) => {
+                            let lat = obj.geometry.coordinates[1];
+                            let lon = obj.geometry.coordinates[0];
+                            let thisID = obj.id;
+                            getFeed(config.VA.detailURL + obj.id, async function (result) {
+                                var eventObj = JSON.parse(result.responseText);
+                                advisoriesVA.push({
+                                    state: ['VA', 'Virginia'],
+                                    id: eventObj[thisID].fid,
+                                    popupType: 0,
+                                    title: "Weather",
+                                    lon: lon,
+                                    lat: lat,
+                                    type: eventObj[thisID].type,
+                                    keyword: ['Constructions'], //keywords for roadwork/construction
+                                    desc: eventObj[thisID].display_text,
+                                    time: moment(new Date(eventObj[thisID].update * 1000)).format('LLL'),
+                                    link: ''
+                                });
+                                resolve();
+                            });
+                        }));
+                }
+            },
+            URL: ['https://www.511virginia.org/data/geojson/icons.construction.geojson', 'https://www.511virginia.org/data/geojson/icons.high_impact_incident.geojson', 'https://www.511virginia.org/data/geojson/icons.weather.geojson'],
+            detailURL: ['https://www.511virginia.org/report-json.pl?idents='],
         },
         WA: {
             data(res, index) {
