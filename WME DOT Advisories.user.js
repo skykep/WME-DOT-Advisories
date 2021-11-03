@@ -950,7 +950,6 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 if (obj.tooltip.toUpperCase().includes("CONSTRUCTION")) {
                     advType = "Construction";
                 } else { advType = "Incident"; }
-                console.log(obj.features[0].id);
                     if (obj.features[0].properties.icon.url == "/images/tg_closure_urgent.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_critical.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_routine.svg" || obj.features[0].properties.icon.url == "/images/tg_crash_routine.svg" || (obj.features[0].properties.icon.url == "/images/tg_warning_routine.svg" && obj.tooltip.toUpperCase().includes("RAMP CLOSE"))) {
                         promisesIN.push(new Promise((resolve, reject) => {
                             advisoriesIN.push({
