@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.59
+// @version      1.60
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -123,7 +123,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '</div></div>'
         ].join(' '));
         new WazeWrap.Interface.Tab('DOT Advisories', $section.html(), initializeSettings);
-        WazeWrap.Interface.ShowScriptUpdate("WME DOT Advisories", GM_info.script.version, updateMessage, "https://greasyfork.org/en/scripts/412976-wme-dot-advisories", "https://www.waze.com/forum/viewtopic.php?f=819&t=308141");
+        //WazeWrap.Interface.ShowScriptUpdate("WME DOT Advisories", GM_info.script.version, updateMessage, "https://greasyfork.org/en/scripts/412976-wme-dot-advisories", "https://www.waze.com/forum/viewtopic.php?f=819&t=308141");
         getBounds();
         W.map.events.register("moveend", W.map, function () {
             getBounds();
@@ -950,24 +950,24 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 if (obj.tooltip.toUpperCase().includes("CONSTRUCTION")) {
                     advType = "Construction";
                 } else { advType = "Incident"; }
-                    if (obj.features[0].properties.icon.url == "/images/tg_closure_urgent.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_critical.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_routine.svg" || obj.features[0].properties.icon.url == "/images/tg_crash_routine.svg" || (obj.features[0].properties.icon.url == "/images/tg_warning_routine.svg" && obj.tooltip.toUpperCase().includes("RAMP CLOSE"))) {
-                        promisesIN.push(new Promise((resolve, reject) => {
-                            advisoriesIN.push({
-                                state: ['IN', 'Indiana'],
-                                id: obj.features[0].id,
-                                popupType: 0,
-                                title: "N/A",
-                                lon: obj.features[0].geometry.coordinates[0],
-                                lat: obj.features[0].geometry.coordinates[1],
-                                type: advType,
-                                keyword: ['Construction'], //keywords for roadwork/construction
-                                desc: obj.tooltip,
-                                time: "N/A",
-                                link: ''
-                            });
-                            resolve();
-                        }))
-                    }
+                if (obj.features[0].properties.icon.url == "/images/tg_closure_urgent.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_critical.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_routine.svg" || obj.features[0].properties.icon.url == "/images/tg_crash_routine.svg" || (obj.features[0].properties.icon.url == "/images/tg_warning_routine.svg" && obj.tooltip.toUpperCase().includes("RAMP CLOSE"))) {
+                    promisesIN.push(new Promise((resolve, reject) => {
+                        advisoriesIN.push({
+                            state: ['IN', 'Indiana'],
+                            id: obj.features[0].id,
+                            popupType: 0,
+                            title: "N/A",
+                            lon: obj.features[0].geometry.coordinates[0],
+                            lat: obj.features[0].geometry.coordinates[1],
+                            type: advType,
+                            keyword: ['Construction'], //keywords for roadwork/construction
+                            desc: obj.tooltip,
+                            time: "N/A",
+                            link: ''
+                        });
+                        resolve();
+                    }))
+                }
             },
             URL: ['http://scripts.essentialintegrations.com/IN']
         },
@@ -1377,39 +1377,33 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                         break;
                     case 1:
-                        var originShift = 2.0 * Math.PI * 6378137.0 / 2.0;
-                        var lon = (obj.geometry.x / originShift) * 180.0;
-                        var lat = (obj.geometry.y / originShift) * 180.0;
-                        lat = 180.0 / Math.PI * (2.0 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
                         var timing;
-                        if (obj.attributes.END_DATE == null) {
-                            timing = moment(new Date(obj.attributes.START_DATE)).format('LL');
+                        if (obj.attributes.endtime == null) {
+                            timing = moment(new Date(obj.attributes.starttime)).format('LLL');
                         } else {
-                            timing = moment(new Date(obj.attributes.START_DATE)).format('LL') + ' to ' + moment(new Date(obj.attributes.END_DATE)).format('LL');
-                        }
-                        if (obj.attributes.START_TIME != null) {
-                            timing = timing + '<br>' + obj.attributes.START_TIME + ' to ' + obj.attributes.END_TIME;
+                            timing = moment(new Date(obj.attributes.starttime)).format('LLL') + ' to ' + moment(new Date(obj.attributes.endtime)).format('LLL');
                         }
                         promisesPA.push(new Promise((resolve, reject) => {
-                            advisoriesPA.push({
-                                state: ['PA', 'Pennsylvania'],
-                                id: obj.attributes.GlobalID,
-                                popupType: 0,
-                                title: 'HARRISBURG',
-                                lon: lon,
-                                lat: lat,
-                                type: 'Closure',
-                                keyword: ['Closure'], //keywords for roadwork/construction
-                                desc: obj.attributes.STREET_NAME + ' between ' + obj.attributes.STREET_FROM + ' and ' + obj.attributes.STREET_TO + '<br>' + obj.attributes.REASON_FOR_CLOSURE + '<br>' + timing,
-                                time: moment(new Date(obj.attributes.EditDate)).format('LLL'),
-                                link: ''
-                            });
+                            if (obj.attributes.endtime > Date.now()) {
+                                advisoriesPA.push({
+                                    state: ['PA', 'Pennsylvania'],
+                                    id: obj.attributes.GlobalID,
+                                    popupType: 0,
+                                    title: 'HARRISBURG',
+                                    lon: obj.geometry.paths[0][0][0],
+                                    lat: obj.geometry.paths[0][0][1],
+                                    type: 'Closure',
+                                    keyword: ['Closure'], //keywords for roadwork/construction
+                                    desc: obj.attributes.street + ': ' + obj.attributes.description + '<br>' + timing,
+                                    time: moment(new Date(obj.attributes.EditDate)).format('LLL'),
+                                    link: ''
+                                });
+                            }
                             resolve();
                         }))
                 }
             },
-            URL: ['http://scripts.essentialintegrations.com/PA']
-            //https://services5.arcgis.com/9n3LUAMi3B692MBL/arcgis/rest/services/Street_Closures_for_GIS_2017/FeatureServer/0/query?f=json&where=1%3D1&returnGeometry=true&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=102100&resultOffset=0&resultRecordCount=2000
+            URL: ['http://scripts.essentialintegrations.com/PA', 'https://services5.arcgis.com/9n3LUAMi3B692MBL/ArcGIS/rest/services/RoadClosures_f0c23ca29f394e03a9ea06a2ffcb317a/FeatureServer/1/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_StatuteMile&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=4326&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=true&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=']
         },
         VA: {
             data(res, index) {
