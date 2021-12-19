@@ -15,7 +15,6 @@
 // @grant        GM_info
 // @grant        GM_fetch
 // @grant        GM_addStyle
-// @require      https://cdn.jsdelivr.net/npm/hls.js@latest
 // @connect      511nj.org
 // @connect      511ny.org
 // @connect      511pa.com
