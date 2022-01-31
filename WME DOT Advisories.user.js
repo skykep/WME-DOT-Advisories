@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.63
+// @version      1.65
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -39,12 +39,14 @@
 /* global $ */
 /* global I18n */
 /* global _ */
+
 // ==/UserScript==
 
 let AKDOTLayer, AZDOTLayer, CTDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, IADOTLayer, ILDOTLayer, INDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, MNDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, TXDOTLayer, VADOTLayer, WADOTLayer, WIDOTLayer, WVDOTLayer;
 let promisesAK, promisesAZ, promisesCT, promisesDE, promisesFL, promisesGA, promisesIA, promisesIL, promisesIN, promisesLA, promisesMD, promisesMI, promisesMN, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesTX, promisesVA, promisesWA, promisesWI, promisesWV;
 let advisoriesAK, advisoriesAZ, advisoriesCT, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIA, advisoriesIL, advisoriesIN, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesMN, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesTX, advisoriesVA, advisoriesWA, advisoriesWI, advisoriesWV;
 let AKFeed = [], AZFeed = [], CTFeed = [], DEFeed = [], FLFeed = [], GAFeed = [], IAFeed = [], ILFeed = [], INFeed = [], LAFeed = [], MDFeed = [], MIFeed = [], MNFeed = [], NCFeed = [], NJFeed = [], NVFeed = [], NYFeed = [], OHFeed = [], ORFeed = [], PAFeed = [], TXFeed = [], VAFeed = [], WAFeed = [], WIFeed = [], WVFeed = [];
+let endpointsLayer;
 let settings;
 let mapBounds;
 let state, stateLength, advisories;
@@ -54,6 +56,7 @@ const DEIconSchRestriction = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4A
 const DEIconSchClosure = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAoCAYAAADpE0oSAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTYxOTU5RkJGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTYxOTU5RkNGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFNjE5NTlGOUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFNjE5NTlGQUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PuSU594AAAfTSURBVHja5Fh7cJTVFf/tZnezea0xLwLJJhXC04ADCmkGDUlIkBEVlEQBizWdTpmW9o/SmvKHNNM2oTMtWIUqdVCpbCnWhKAGq4VCCkqoIEEKSYAgEPKy3bwmbF67m7393fttNlnYBFQ6/tEz+9vv2/ud7557Hvecc1cnhMDXQXp8TfT/J9jguxvoBP79CW90/OhuttgEIo4IJbqJNqKFGD1gxCBgDAfi0zh/0AjB7TVAxTJOaxhNcAaRQ9xDJBKxRJhXsJ1oJj4mDhAnb3h70AlETQXyq6huyAjBMroH+3m9QfCDxA85yKWKWMUHL4QyUBS/vkHM5XtcuY68opJPthLHfbO4Kdg94DPKsGAdLRhkHqlxJFHEH98jcyg8fNHj1lwh+YxUVm/kGCdz9mhXoZNjCdCbvkXGRznwG15/Szi194ID+NifJhJ/IHMuPPSN6xpgtgATHqCRs+jde4EIq7YAl4PGvgJ8Tis3UVE742SgCzBZLFSgmPNMI35EdAUOrmEaT7ypTCe1dPYCyXTtPbTgXQ+rwLiBolO1Z25qXr8HOP0iF1INBEdIS0rtQ4hnCMdo20kGy2ZiLoRbC4i5zwKPvUcbLA0s1E8Nvj79aSDvfWAG5TmveX2qW86v5wLvY526fZLmWaGY3X1AehFc80qw9RUbch9Zhp22P2lBGIBcLhe2vrwNuY8ug63sKJC5DZj5XZq9eyigfgy9frGKIS2YhYamIxPE781XxLZIIV7g0P5vc9gjdr65R9xpNIj7jRBRwSZx6MgREYj+/Fap4ssgX4zkqzohxEC7EHuytPleChPijxOPC0dTiJQ3rPFn5avhcSXDRZ9auDvSNqgIPltXg/EuN0pSjQgecKL2fH1Ajc9euIg48v2SfEby1dWdYYBxp82jhU13MOpdDMLG2aizPTGscV+7Wbwx+TQ1FuJ5Dv3zFz5N6urqxNy0b4oInUnMu+8+0dDQEFDj2rpaxWeGXsyZPVtcbWzUHridQrz/lBC/47xbgmiBzArB/awZvP3sZDhaUtQ+DWdCSs5Vw3a7HcLjQWHhs/jsahNWLH8MSdZEnDp1Ck6nE4mJiUhISIDDwWD1CKxf/zM0/8eORx5chPCwMLS1tSEmJoYR/xBwqVxLIJ31d6OrPkHT+NOXVomtRqfyRekDQvS1qcVu3LhRWK1WkZKSIvbv36/GNmzYIChMjR08eFCNFRQUCC5CZGVlidaWFjWWnZ0tNm3apGndcU6IHROFeFFPX4d0i/O7H9J87GicRJFGFXwyMZij1bBccWNjI6ZPn47MzEwcPnwYmzdvRnNzM3JycrBgwQLYbDbs2LEDTU1NWLhwIeLGjUNxcTEOHTqEvr4+LQDCmdpDx3lT50A4+triNcGD/WYV8jJTBkf6Aqa3txdxcXEoKSlR5ly7dq0amzVrFoqKinD58mWsW7dO8VJDmno9jh07pvjVDh3K+UYWMVMEfDL4YChzDW9O+nSIFi1ahPT0dMycORMnT55ERkYG0tLSsGrVKsTHx6OiogJLlixBSEgI1qxZg6CgILS2tmLlypUwmUyYP3/+cAESvnl1mnWlj6ueK2TEeZSP9z3O7ev0i9hdu3aJvLw8QfOJsYhmF/n5+YIu8X/Qz/28e47mYxlLZ19bqZn6jpRapkOnuu++RJ+3+u3RyspKlJWVobq6esyMeeLECZSWlipz+1HXRaBHzumRzUAHLMn1mqknpH8Mc2QH+jvHM9yBDjYFEUm+98xms7pWVVXBwqIzlO18eVevV/6sqanx/fajVi6k165l6NBxnyN6Rp0mOHKyHdGzjqL5H3mqtl4s415erNXeEVReXq5wM9KNbCRk2bz0tlbL5YLi5nyI0PE9hiF/I2W5Dc2VeTCygl0oBaY8BViztXZsYEBdJ02apALt+l58SJA0tdxqMrn46PxuNkUfsXLRakHGHkxZYfOvx3H3HoDOdBiG4AWqnH1UCCzdR9PEY+rUqUhNTWUGK8Tq1at9qfZ6wVu2bMH27duRlOR1k71a4HixTmsgqW1E8t+RlKPaIZ1vghY2YXtzl7Jsva2YZBdx1+JBZG8f7EaUqauzA3GxsfR38Kgmlnu8rb0D0TGxCHPU9uJAgQlt/zKo3ODucyFqRg6eqDoiW6ARUaAWcJB4R93LinLlgyBULO23OD5pZo52UKh7LN+GhoY6k6wJnWHNey9j3+NutJ8xqHm0Pfw6r0dVmxug9XF4m7MsWseiXmo7bcHehz2Y8mQ9UvIHETUtEuaoMLaoBmVjWUWcDjfTYDfsn3bg3E4zGj6YTKtFwBgxpJBsfZ+XOXKsnovtA14m1mvpjk2ecEXizKuspW804s5pTYhMaaLvXSpKB1lnr101oPOcGdcaJrJKxSPY4m1ulFBppV8RF27W7MGr9f0aPFqvFRIpt4SVJdQK+xk5Z69XA2rOZs7AqQwR2pbx9d6KGKGwjX6E8acO4gcEuzxYfflWLkCa3+vSAOeU63uyWtVrQS3ylg9tVAs/9ZrKf/JR4Ueyy5Ol68qXOS2+Rfz8SxwGZQb5CfG3r3JMfYF47QsK/jXx6lc9H/d5TV5xi0J59MHG23Uwl+eeAuKvN+H7i9evztv5j0A78fQYwt8lvu+10G3/K6Lde/h6L4Cm3yE6/5f/gdi9wnmiRI/3kPeMd1G3TP8VYACbXLnLcR7mOAAAAABJRU5ErkJggg==';
 const Incident = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA/ppVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ1dWlkOjVEMjA4OTI0OTNCRkRCMTE5MTRBODU5MEQzMTUwOEM4IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjk4MDFDMjUwNzIzRDExRTNBQTczRjkyOTZEQ0IyOTY0IiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjk4MDFDMjRGNzIzRDExRTNBQTczRjkyOTZEQ0IyOTY0IiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIElsbHVzdHJhdG9yIENDIChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmFiMzczNzVkLWIwYTYtNDRjNC04OTE4LWU4M2ZiOTRhOGY4NSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpjMjUyYWZlMC1mMjU0LWY5NDMtOGZiZi0wMTc3Mzc1ZWEzYzYiLz4gPGRjOnRpdGxlPiA8cmRmOkFsdD4gPHJkZjpsaSB4bWw6bGFuZz0ieC1kZWZhdWx0Ij5JbmNpZGVudHNfb3V0bGluZWQ8L3JkZjpsaT4gPC9yZGY6QWx0PiA8L2RjOnRpdGxlPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pmcc3z4AAASdSURBVHja7FdLaFxVGP7OPfc1M5lMJ5M0Gk0nNdE+sogPLNG2KNaFUksqlkAjSGtcCBJUWgouhErAUOhCwb2uXJQupCtF0I102SrEUsFNkRaxJJ3MTGbu+/j/J2lnKp04HdNkY+AnZ875/u9853/ce65QSmEz/wxs8t//AjZdgDkytL1j5whIaRKgvuERCIH9UDjHpsedRqATJwE8Yimcn5LuVv79deztEQJPU0Nf35AILCZq7lXX3jqds8DGY5574Cmgk6OS4PCoJaamcvSjO9HGY57jtQcqwFPot1V85lhByPHptzBw7jttz9H4eK8hnSQ+4xPmfjhlz5YtbQHprChH6vRrTuXQqddfgP3+HGSuANnVDYw9ix3XL+G3X68UfgkduFJ8L9Y7AvUYL+7MipMndig4eQdKNOqXx07exomdCoxh7LqmIFRwbYHP3t1uYHevgXq9CgRNre/X9ByvMYax7LN+EVA4/XKfMTbRJ3GzYiKs+lCh31gOA4Tlul5jDGPZZ10ERAp7C7aYmX7YgvIl6p4Fv+IjCcJGfZAAvxroNcYwln3Y978KkLVEfXK0z0yPmAbKNYEglAjKAZ06bIpAhKASIvBXMIxlH/Zljo4EcBUvRsl7e7vkgYMZC/Ua554E0An98j8iEFAEyh6CwNQYxrIP+zKH6ERATanhHtP46M2sgxydurRMdeeRAM+Ed8tD4gcNAV6g53zf1BjGsg/7Mgdz3ZcAeqbTo158fiRtP/SMsPAnEYYU3sAz6L+EV/IQeY0ijFnAko+I1lYwhvZhX+ZgLuZsW0BVqalRUx6ckA7lVMH3WMCqhSSEU+A3UhBTOgIWEBp3cOzDvszBXMzZlgCiHcwL8ekbho1UYIAKHoqinfirFlIaKAJJEDfVQKTnYlq7jWMf9mUO5mJO5l5TgNKXDDW3H/bAk7GFcqD0hnGTJTGFWatqdiRRVIS8dheWjDmYizmZW60lgACHt0EemVAOkdFJknubYbtY+nn+jl+ZxobltsQzF3MyN+9xV7cNF4f0YahVBkKlLp6UmeI+Kp4qvX5afjEkCjLloO/QK/rnXxe+pU6gqBiiZUt30Vl/UiHOxsvXLCGeJ+4b4nYEeHBLqVMHLKu4zzWROAmodmC2MEP4SA32Izu6W1u62K/nWuGZizmZm/fgvUTzlWw5US8Nm3JmMuMgQzOlVj2jn3pUSl0mRmY/RveecT2X2TWMq++8Te0QQtj39uSSzdKuk5aD+Uoy80cUX8gY4geTaiRPX2ezk92WMZaTWIiTNV9jyo8gM1m4xcZt2t1WRLrgIi6XIdzW10x6gGNMSkwKyzi7EM/S3pdlKpv7YCJvHf/wURvKVrApXKm1LC1h+SU4jgV7eBddk+qof/Mloks/IpNPI+W29nU5fY7CU90GbgRq8Eo9LplpQ4w/QZeaJBVhgaIr2rnKOGlUzn8BZ/7iynXg6mUYhfRqoP/lzU7p7aUs8Z7pJTEuHisOHe1z8FUPvUljhfY+lVkl9VdSXVrp5QyxUWjR5pe2FBCLVC43fRwTj1Mb0kVypBbrLtqQb3XqYkGZhCPw+98CDACt/EZVMWT0ogAAAABJRU5ErkJggg==';
 const Roadwork = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA/VpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDE0IDc5LjE1MTQ4MSwgMjAxMy8wMy8xMy0xMjowOToxNSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOmRjPSJodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ1dWlkOjVEMjA4OTI0OTNCRkRCMTE5MTRBODU5MEQzMTUwOEM4IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkUzRjQ0OTg5NzIzOTExRTM4ODlCRkYwNDVGNDI0RjlEIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkUzRjQ0OTg4NzIzOTExRTM4ODlCRkYwNDVGNDI0RjlEIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIElsbHVzdHJhdG9yIENDIChXaW5kb3dzKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ1dWlkOmFkOTA4NmJkLTAzMGEtNDA0MS04ZTdiLWJhZGYwNWRmZDMzZiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDplNDcyMTVk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';
+const orangeDot = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAA7EAAAOxAGVKw4bAAACCklEQVRIibXVv0tVcRjH8ddzcBAHaYiLNEhEk7iHa6U1NUag2FybU0hEQ0NbrYVbeP0DKkSw3bFNHCSaGkRCpCFCfBruPXruuefea2Df5fvmnOd8nuf5nO+PMGSctk1HWhDuYTZTK0KBQ+xiG1vYj8Vmjag/yDaYSl4ED6WrAtkUDY7wES/xvZ6o6EvAQrKDp3TEs1pKVuYOX5GWk51Mj4Z2kG1LmdaE8fJlVgKzKxzIaODwB6t4U3YSkOsIt6VPmOhJnQ3c9OycT/BY2oil0qIwlWktmejzOXo5K/MAHsv0NsNNzv/BqnCjFMs4tyOzl6vzQKYVvMp1Ituu4avUGrBK+sdwi8pxjFsF7tIvnjmEo1LxIGYSD8ZwR3ZXgspqKYPrPCp5L8+PYUYQlfbOmokBfBGLOjxToNWreoHKLmJRR29yrP5h1EXos6gscCSns4NLVCw442jgqMSMYOG40DkVeyscUt6/dBHsFtjOhoCzzVXjMrCyqYbxdoEvwcF/sOhXhM9FLPqRaePSLUqb2Cu6WV8L3y7RokPheSw6LbqKB3iC35dg0YmwIu13P6u01raM99L4oN2ZYdArkU6EZ+oXTi3J/eQ9pqOy0aLif8T57i45OMCKsFG9l5vu5C1pLngn/BxlUXIkfMgwVxdv7KDSCVzPtBBhHrOYyiTCobSXYRubkfZjqVnnLwfVKsyQ9b+DAAAAAElFTkSuQmCC';
 const PLIcon = 'data:image/gif;base64,R0lGODlhFgAUANUAAOHh4t7e34iKj0dLU0VJUUhMVEpOVk1RWU9TW2xvdXF0enx/hZOVmcbHyVJWXVFVXFRYX1dbYl5iaTtASD5DSz1CSj9ETEFGTkNIUEVKUn6BhoSHjFpeZGBkamVpb2RobmpudGltc2ZqcG1xd2tvdaqsr0ZLUklOVU9UW3h8gdHS08nKy////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAACwALAAAAAAWABQAAAZrQJZwSCwaj8ikcskkmTpMI2JSmUxSUaFjIhJCJlkhiHjJMD2YUDECVqKsVuJk4OYGSqeDcEJRTkUACgkrKgx8SgsTH0IcExgeh0oFbUICFo5MBpRCDVkbEyNDEw9hbAYSkWEaVQRhrq+wTEEAOw==';
 const reportIcon = 'data:image/gif;base64,R0lGODlhFAAUALMAANcsLNgvL9g4OAMBAc5RUcZVVW1tbQAAAP///wAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAAgALAAAAAAUABQAAARdEKFDqz0y6zO695S2FUBpAkNliBNxmmnFHu6LXmtG2+iXbjWeiYDRuXw2IhAg+CSLkp1wCG31fB6A0jilLrva6g7r3EaDU7MVEGi72yX1mNwJj8CAgpiOFV/+FhIRADs=';
 const NJURLDetail = 'https://511nj.org/API/client/Map/getEventPopupData?EventId=';
@@ -64,10 +67,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
 (function () {
     'use strict';
     //Bootstrap
-    window["text123"] = 123;
     function bootstrap(tries = 1) {
-        if (W && W.loginManager && W.map && W.loginManager.user && W.model
-            && W.model.states && W.model.states.getObjectArray().length && WazeWrap && WazeWrap.Ready) {
+        if (W && W.loginManager && W.map && W.loginManager.user && W.model && W.model.states && W.model.states.getObjectArray().length && WazeWrap && WazeWrap.Ready) {
             console.log("WME DOT Advisories Loaded!");
             init();
             addListeners();
@@ -78,14 +79,14 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             setTimeout(function () { bootstrap(++tries); }, 200);
         }
     }
-    Function.prototype.bind = function (thisObject) {
-        var method = this;
-        var oldargs = [].slice.call(arguments, 1);
-        return function () {
-            var newargs = [].slice.call(arguments);
-            return method.apply(thisObject, oldargs.concat(newargs));
-        };
-    }
+    // Function.prototype.bind = function (thisObject) {
+    //     var method = this;
+    //     var oldargs = [].slice.call(arguments, 1);
+    //     return function () {
+    //         var newargs = [].slice.call(arguments);
+    //         return method.apply(thisObject, oldargs.concat(newargs));
+    //     };
+    // }
     //Build the Tab and Settings Division
     function init() {
         var $section = $('<div id="WMEDOTAdvisoriesPanel">');
@@ -135,14 +136,14 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         mapBounds = W.map.getExtent();
         mapBounds.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
     }
-    getFeed("http://40.121.218.107/CSS", function (result) {
-        GM_addStyle(result.responseText);
+    getFeed("http://40.121.218.107/CSS", "css", "", function (result) {
+        GM_addStyle(result);
     })
     //Build the State Layers
     function buildDOTAdvLayers(state) {
         eval(state.substring(0, 2) + 'DOTLayer = new OpenLayers.Layer.Markers("' + state.substring(0, 2) + 'DOTLayer")');
         W.map.addLayer(eval(state.substring(0, 2) + 'DOTLayer'));
-        W.map.getOLMap().setLayerIndex(eval(state.substring(0, 2) + 'DOTLayer'), 10);
+        //W.map.getOLMap().setLayerIndex(eval(state.substring(0, 2) + 'DOTLayer'), 10);
     }
     function redrawAdvs() {
         for (const property in settings) {
@@ -261,6 +262,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         eval('getAdvisories(config.' + stateAbv + ',"' + stateAbv + '", "report")');
         //} else { getNJDOT("report"); }
     }
+
     //Generate the Advisory markers
     function drawMarkers(parms) {
         var icontype;
@@ -290,6 +292,12 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         newMarker.events.register('click', newMarker, popup);
         newMarker.location = lonLat;
         newMarker.recurrence = parms.recurrence;
+        if (parms.state[0] == "PA") {
+            newMarker.fromLon = parms.fromLon;
+            newMarker.toLon = parms.toLon;
+            newMarker.fromLat = parms.fromLat;
+            newMarker.toLat = parms.toLat;
+        }
         if (parms.link != '') {
             newMarker.link = '<a href="' + parms.link + '" target="_blank">Publication Link</a>';
         } else {
@@ -297,9 +305,28 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         }
         eval(parms.state[0] + "DOTLayer.addMarker(newMarker)");
     }
+
+    //Draw the endpoint markers
+    function drawEndpoints(lon, lat) {
+        var size = new OpenLayers.Size(24, 24);
+        var icon = new OpenLayers.Icon(orangeDot, size);
+        var epsg4326 = new OpenLayers.Projection("EPSG:4326"); //WGS 1984 projection
+        var projectTo = W.map.getProjectionObject(); //The map projection (Spherical Mercator)
+        var lonLat = new OpenLayers.LonLat(lon, lat).transform(epsg4326, projectTo);
+        var endpoint = new OpenLayers.Marker(lonLat, icon);
+        endpointsLayer.addMarker(endpoint);
+    }
+
+    //Generate the Popup
     function popup(evt) {
         $("#gmPopupContainer").remove();
         $("#gmPopupContainer").hide();
+        endpointsLayer = new OpenLayers.Layer.Markers("endpointsLayer");
+        W.map.addLayer(endpointsLayer);
+        if ((this.fromLon != this.toLon) || (this.fromLat != this.toLat)) {
+            drawEndpoints(this.fromLon, this.fromLat);
+            drawEndpoints(this.toLon, this.toLat);
+        }
         var popupHTML;
         W.map.moveTo(this.location);
         let htmlString = '<div id="gmPopupContainer" style="max-width:500px;margin: 1;text-align: center;padding: 5px;z-index: 1100">' +
@@ -329,6 +356,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         $("#gmCloseDlgBtn").click(function () {
             $("#gmPopupContainer").remove();
             $("#gmPopupContainer").hide();
+            W.map.removeLayer(endpointsLayer);
         });
         dragElement(document.getElementById("gmPopupContainer"));
     }
@@ -519,6 +547,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         });
     }
     bootstrap();
+
     const config = { //Configuration data for each state
         AK: {
             data(res, index) {
@@ -526,7 +555,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 return (resultText[index]);
             },
             filter(index) {
-                let filtertext = ['(resultObj[i].LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")'];
+                let filtertext = [true]; //['(resultObj[i].LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")'];
                 return (filtertext[index]);
             },
             scheme(obj, index) {
@@ -1401,6 +1430,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                                 title: obj.CountyName,
                                 lon: x,
                                 lat: y,
+                                fromLon: obj.FromLocLatLong.split(",")[1],
+                                fromLat: obj.FromLocLatLong.split(",")[0],
+                                toLon: obj.ToLocLatLong.split(",")[1],
+                                toLat: obj.ToLocLatLong.split(",")[0],
                                 type: obj.EventType,
                                 keyword: ['roadwork', 'bridge outage'], //keywords for roadwork/construction
                                 desc: obj.Description,
