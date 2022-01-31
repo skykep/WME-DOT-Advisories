@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.66
+// @version      1.67
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -1459,6 +1459,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                                     title: 'HARRISBURG',
                                     lon: obj.geometry.paths[0][0][0],
                                     lat: obj.geometry.paths[0][0][1],
+                                    fromLon: obj.geometry.paths[0][0][0],
+                                    fromLat: obj.geometry.paths[0][0][1],
+                                    toLon: obj.geometry.paths[0][obj.geometry.paths[0].length - 1][0],
+                                    toLat: obj.geometry.paths[0][obj.geometry.paths[0].length - 1][1],
                                     type: 'Closure',
                                     keyword: ['Closure'], //keywords for roadwork/construction
                                     desc: obj.attributes.street + ': ' + obj.attributes.description + '<br>' + timing,
