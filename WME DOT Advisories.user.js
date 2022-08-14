@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.74
+// @version      1.75
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -130,8 +130,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         WazeWrap.Interface.ShowScriptUpdate("WME DOT Advisories", GM_info.script.version, updateMessage, "https://greasyfork.org/en/scripts/412976-wme-dot-advisories", "https://www.waze.com/forum/viewtopic.php?f=819&t=308141");
         getBounds();
         W.map.events.register("moveend", W.map, function () {
-            getBounds();
-            redrawAdvs();
+            if (localsettings.enabled) {
+                getBounds();
+                redrawAdvs();
+            }
         });
     }
     function setEnabled(value) {
@@ -464,9 +466,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             setChecked('chk' + state + 'DOTEnabled', eval('settings.' + state + 'DOTEnabled'));
         }
         //Build the layers for the selected states
-            for (var i = 0; i < stateLength; i++) {
-                state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-                if (document.getElementById('chk' + state + 'DOTEnabled').checked) { buildDOTAdvLayers(state); eval('getAdvisories(config.' + state + ',"' + state + '")') }
+        for (var i = 0; i < stateLength; i++) {
+            state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
+            if (document.getElementById('chk' + state + 'DOTEnabled').checked) { buildDOTAdvLayers(state); eval('getAdvisories(config.' + state + ',"' + state + '")') }
         }
         setEnabled(localsettings.enabled);
     }
