@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.78
+// @version      1.79
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -531,9 +531,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         document.getElementsByClassName("reload-button")[0].addEventListener('click', function (e) {
             for (var i = 0; i < stateLength; i++) {
                 state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-                if (document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked) { eval('W.map.removeLayer(' + state + 'DOTLayer)'); }
+                //if (document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked) { eval('W.map.removeLayer(' + state + 'DOTLayer)'); }
             }
-            initializeSettings();
+            //initializeSettings();
+            redrawAdvs();
         });
         //Add Handler for Checkbox Setting Changes
         $('.WMEDOTAdvSettingsCheckbox').change(function () {
