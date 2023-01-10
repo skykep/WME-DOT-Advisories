@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.85
+// @version      1.86
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -32,7 +32,7 @@
 // @connect      carsprogram.org
 // @connect      phoenix.gov
 // @connect      511virginia.org
-// @connect      40.121.218.107
+// @connect      72.167.49.86
 // @connect      72.167.49.86
 // @connect      ncdot.gov
 /* global OpenLayers */
@@ -520,7 +520,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         //Build the layers for the selected states
         for (var i = 0; i < stateLength; i++) {
             state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-            if (document.getElementById('chk' + state + 'DOTEnabled').checked) { buildDOTAdvLayers(state); eval('getAdvisories(config.' + state + ',"' + state + '")') }
+            if (document.getElementById('chk' + state + 'DOTEnabled').checked) {
+                buildDOTAdvLayers(state); eval('getAdvisories(config.' + state + ',"' + state + '")');
+                console.log("enabling" + state);
+            }
         }
         $('.wmeDOTSettings').change(function () {
             var settingName = $(this)[0].id;
@@ -683,7 +686,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/AK']
+            URL: ['http://72.167.49.86:8080/AK']
         },
         AZ: {
             data(res, index) {
@@ -713,7 +716,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/AZ', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/0/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=300&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/1/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=200&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/2/query?f=json&where=1%3D1&returnGeometry=true&outSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset=0&resultRecordCount=25']
+            URL: ['http://72.167.49.86:8080/AZ', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/0/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=300&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/1/query?where=Closure_Type+LIKE+%27FULL%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&distance=&units=esriSRUnit_Foot&relationParam=&outFields=*&returnGeometry=true&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=4326&havingClause=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&historicMoment=&returnDistinctValues=false&resultOffset=0&resultRecordCount=200&returnExtentOnly=false&datumTransformation=&parameterValues=&rangeValues=&quantizationParameters=&featureEncoding=esriDefault&f=pjson', 'https://maps.phoenix.gov/pub/rest/services/Public/STR_PubTraffRes/MapServer/2/query?f=json&where=1%3D1&returnGeometry=true&outSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&resultOffset=0&resultRecordCount=25']
         },
         CT: {
             data(res, index) {
@@ -744,7 +747,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/CT']
+            URL: ['http://72.167.49.86:8080/CT']
         },
         DE: {
             data(res, index) {
@@ -981,7 +984,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/GA']
+            URL: ['http://72.167.49.86:8080/GA']
         },
         IA: {
             data(res, index) {
@@ -1014,7 +1017,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/IA']
+            URL: ['http://72.167.49.86:8080/IA']
         },
         IL: {
             data(res, index) {
@@ -1130,7 +1133,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     }))
                 }
             },
-            URL: ['http://40.121.218.107:8080/IN']
+            URL: ['http://72.167.49.86:8080/IN']
         },
         LA: {
             data(res, index) {
@@ -1159,7 +1162,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/LA']
+            URL: ['http://72.167.49.86:8080/LA']
         },
         MD: {
             data(res, index) {
@@ -1271,7 +1274,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/MN']
+            URL: ['http://72.167.49.86:8080/MN']
         },
         NC: {
             data(res, index) {
@@ -1367,7 +1370,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/NV']
+            URL: ['http://72.167.49.86:8080/NV']
         },
         NY: {
             data(res, index) {
@@ -1396,7 +1399,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/NY']
+            URL: ['http://72.167.49.86:8080/NY']
         },
         OH: {
             data(res, index) {
@@ -1574,7 +1577,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                 }
             },
-            URL: ['http://40.121.218.107:8080/PA', 'https://services5.arcgis.com/9n3LUAMi3B692MBL/ArcGIS/rest/services/RoadClosures_f0c23ca29f394e03a9ea06a2ffcb317a/FeatureServer/1/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_StatuteMile&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=4326&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=true&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=']
+            URL: ['http://72.167.49.86:8080/PA', 'https://services5.arcgis.com/9n3LUAMi3B692MBL/ArcGIS/rest/services/RoadClosures_f0c23ca29f394e03a9ea06a2ffcb317a/FeatureServer/1/query?where=1%3D1&objectIds=&time=&geometry=&geometryType=esriGeometryPoint&inSR=&spatialRel=esriSpatialRelIntersects&resultType=none&distance=0.0&units=esriSRUnit_StatuteMile&returnGeodetic=false&outFields=*&returnGeometry=true&featureEncoding=esriDefault&multipatchOption=xyFootprint&maxAllowableOffset=&geometryPrecision=&outSR=4326&datumTransformation=&applyVCSProjection=false&returnIdsOnly=false&returnUniqueIdsOnly=false&returnCountOnly=false&returnExtentOnly=false&returnQueryGeometry=true&returnDistinctValues=false&cacheHint=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&having=&resultOffset=&resultRecordCount=&returnZ=false&returnM=false&returnExceededLimitFeatures=true&quantizationParameters=&sqlFormat=none&f=pjson&token=']
         },
         VA: {
             data(res, index) {
@@ -1699,7 +1702,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/WA']
+            URL: ['http://72.167.49.86:8080/WA']
         },
         WI: {
             data(res, index) {
@@ -1757,7 +1760,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     addObj();
                 }
             },
-            URL: ['http://40.121.218.107:8080/WI']
+            URL: ['http://72.167.49.86:8080/WI']
         },
         WV: {
             data(res, index) {
@@ -1786,7 +1789,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resolve();
                 }))
             },
-            URL: ['http://40.121.218.107:8080/WV']
+            URL: ['http://72.167.49.86:8080/WV']
         }
     };
 })();
