@@ -146,7 +146,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             '</table>',
             '</div><br>',
             '<table border=1 style="text-align:center;width:90%;padding:10px;">',
-            '<tr><td width=20% style="text-align:center"><b>Enable</b></td><td style="text-align"><b>CAN Province</b></td><td width=15%><b>Rpt</b></td></tr>',
+            '<tr><td width=20% style="text-align:center"><b>Enable</b></td><td style="text-align"><b>Canada Province</b></td><td width=15%><b>Rpt</b></td></tr>',
             '<tr><td><input type="checkbox" id="chkONDOTEnabled" class="WMEDOTAdvSettingsCheckbox"></td><td>ON</td><td><div class=DOTreport data-report="report" data-state="Ontario" id="ON"><img src=' + reportIcon + '></div></td></tr>',
             '</table>',
             '</div></div>'
