@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.90
+// @version      1.91
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -174,8 +174,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         }
     }
     function getBounds() {
-        mapBounds = W.map.getExtent();
-        mapBounds.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+        mapBounds = new OpenLayers.Bounds(W.map.getExtent());
+        mapBounds = mapBounds.transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:3857"));
+        return mapBounds;
     }
 
     //Load the CSS
