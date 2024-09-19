@@ -2,7 +2,7 @@
 // @name         WME DOT Advisories
 // @namespace    https://greasyfork.org/en/users/668704-phuz
 // @require      https://greasyfork.org/scripts/24851-wazewrap/code/WazeWrap.js
-// @version      1.91
+// @version      1.92
 // @description  Overlay DOT Advisories on the WME Map Object
 // @author       phuz
 // @include      /^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/
@@ -46,16 +46,15 @@
 
 // ==/UserScript==
 
-let AKDOTLayer, AZDOTLayer, CTDOTLayer, DEDOTLayer, FLDOTLayer, GADOTLayer, IADOTLayer, ILDOTLayer, INDOTLayer, LADOTLayer, MDDOTLayer, MIDOTLayer, MNDOTLayer, NCDOTLayer, NJDOTLayer, NVDOTLayer, NYDOTLayer, OHDOTLayer, ORDOTLayer, PADOTLayer, TXDOTLayer, VADOTLayer, WADOTLayer, WIDOTLayer, WVDOTLayer;
-let promisesAK, promisesAZ, promisesCT, promisesDE, promisesFL, promisesGA, promisesIA, promisesIL, promisesIN, promisesLA, promisesMD, promisesMI, promisesMN, promisesNC, promisesNJ, promisesNV, promisesNY, promisesOH, promisesOR, promisesPA, promisesTX, promisesVA, promisesWA, promisesWI, promisesWV;
-let advisoriesAK, advisoriesAZ, advisoriesCT, advisoriesDE, advisoriesFL, advisoriesGA, advisoriesIA, advisoriesIL, advisoriesIN, advisoriesLA, advisoriesMD, advisoriesMI, advisoriesMN, advisoriesNC, advisoriesNJ, advisoriesNV, advisoriesNY, advisoriesOH, advisoriesOR, advisoriesPA, advisoriesTX, advisoriesVA, advisoriesWA, advisoriesWI, advisoriesWV;
-let AKFeed = [], AZFeed = [], CTFeed = [], DEFeed = [], FLFeed = [], GAFeed = [], IAFeed = [], ILFeed = [], INFeed = [], LAFeed = [], MDFeed = [], MIFeed = [], MNFeed = [], NCFeed = [], NJFeed = [], NVFeed = [], NYFeed = [], OHFeed = [], ORFeed = [], PAFeed = [], TXFeed = [], VAFeed = [], WAFeed = [], WIFeed = [], WVFeed = [];
+let promises = {};
+let advisories = {};
+let feeds = {};
 let endpointsLayer;
 let settings, settingID;
 var loadedSettings = {}, localsettings = {};
 let mapBounds;
-let state, stateLength, advisories;
-const updateMessage = "&#9658; Fix for WME Update";
+let state, stateLength;
+const updateMessage = "&#9658; Remove need for CSP removal";
 const DEIconC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo2NTZCOTQ4MEMxM0FFNDExOTJCNzgxMEFBMkM5Q0QzRSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpGRjU0MDFBMUJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpGRjU0MDFBMEJBMEYxMUU1OERGQ0YxMTRGNzU2OUVFMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkYwRjVFQTIwMDlCQUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjY1NkI5NDgwQzEzQUU0MTE5MkI3ODEwQUEyQzlDRDNFIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+iRjjNgAABVBJREFUeNqsVwlsVFUUPX+Z+Z1OoaWFSqFaU0hYBSSiCdYQhaRKNdFAUlRcMAFL1ABBESMouEYxwTSxRutWIkbBqKQEwxZoWKKGrcoiAqKsBStLO+1s/8/zvP+nzLTzZzpRX+a00+n999x391GEEOh5xOXTsM7+Amgq0px8ojT++wJxjgi6SsZiUIw8aEPuABTl2se6m6z560Z0rpoNJcdI/ngg8QAxlRhFFBNSIEC0ED8R3xIbiEhCWRjqwBHIW9zMi3gyE9M0+xW3UEovJBZAkIyKhEUvJRxVQNkCxaMNp+JH+fcBYhmxzlGldLtpL8TXDBjEHw3EFEQdT6qDxkAfUgG1ZDQUf6ETltN7YZ7YCfH3GZqpj6MB31F0BbGYOmLOLbInlq7cZLs1FIR243gYdy+FPoqe1rxAOADr1D5o46udvAj8heiPDQhvfovvWwGv7znbG8AcN+Wu2aNoHmnix12knomPwz+/CfqY+x1SntC65xF4ZZJNZj+TNwDeyc/CP2871ME3Mcq2h2YT87Imti4enUXv3GuT3vogfDM/5Q3yEgLBK4juXwtB82zipMpQS0bBX7Meav9yJpadY6/TrGE93Z3iatHW0iey+6OXZT6oxUOQU/1earlZURiVLzo3ZalAmHyTyFil3w3ImfE+OuuqZD35IWJLyTuzuxJam4xwU231lRqIK3MhIjvqxH85HR/cZ+tpW5gXsM4fHpTMk3Jj61hTpSwVtV8x9LHTUuPA7A6ufdpJIJWPR8PQym6BMXVZiqh3wiMwmxshOgJ+83hThXfgiDXurjYjitVyZKx8q8ly6VOcGv/fdyGy/RMnO2TYLL6Ob4O34kkofUu6yWplE1hy+Yi1X4V1cvftqKhZ45pcInTVJzovDXDidL1rjUWPbISSmwu1oAhqPlFYxBDS5mNNqdXh70/ZQrvZiFB7QYbkkhIxJV5TrsRG5RIYUxZ170Yxwfbqd6lL1UHc82mJFU9uWPH6A7YJ7RdSFUU6IIJXaZOW3DIdk9s7oRQMduLe9Rll6UVHty//YvobG3mWet3w/VbLyeGxlkN2d4KRqN/w98sR3vIub5fbs8AgwiHkPrEa+rjpCUecP8gkvGQ7Ryu9eU/GBqKPvKfRfqj1T5hHt8QVHOLE2oTogW/IEeWrsweCLOUIWP8wf9vG/n3KyQfZZEyORZ8vpA+dtCMz8eiqzWqfvq2yG0W2vuPcdP0SdLxdSWNO0HS6OWalgNMJ5uGNCLx5Fw38mo3gDKJ7v4KiK1AKy7aoJSP/yNi51KLyVs/46vrIzvoXzGO7EN70BnKmrYT3zvnJiZJporEiShH8fBZj3OYsE5pe2/NZ1+mklU+sFTvq5yiGURRuXGqXhLeiBtmeYMPDvD3DlOOTiwB9L7aix6ajpllX5Ebxmm2lpiP05VyEeAPb1RmOxfh2rLiNg+MLh5S0xCKpMct5bFtXRzwEVZsAbw4T5zNEDzZyHldBHzYZ6oChHPq5EJ2XETvXDPPQBibWdrJHu0jlWUnscWPItAjImSb9u1NWoVQmQm2I/LDKhqLzUZWJZkWYucIJoYcrmHaN9DCxPJ3y3rJlH/FMQlrnGPTZkCFwTDdY1z65cSQnX8D2FtDxb4kR30Tq3BfCrkmRcqSnmjMpVbNM1AXE1ixlXyJW9yaULbGM94zebsHzIfFqNgpVZH84+bmHAT+n+f/auIvxfxPLw8UZVS7kco9+DCkzK/1xLyc52S3YpZKGXH6NWU+MI+qJp+RMcO8qMae2syGWLVIbPIIj0Uhn8FlCLmTT498Y0t/UjLLZlKd8jflHgAEAjYU+RhKpTDQAAAAASUVORK5CYII=';
 const DEIconSchRestriction = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2ZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowNTdDRTI5RjhFOENFNTExQkIwQkQ3QjFGMjA1NkNGMiIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo0MzMwRkNCMUJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDo0MzMwRkNCMEJBMDcxMUU1OTE5RjkwMEI5NThDNEVCMCIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1LjEgV2luZG93cyI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjI4Q0M2MTJGNEVCOUU1MTE4NEU2OTRCNTE0QTVGRkIzIiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjA1N0NFMjlGOEU4Q0U1MTFCQjBCRDdCMUYyMDU2Q0YyIi8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YotOJgAABWdJREFUeNqcVwlsFFUY/nY7e7S0tPbQSkstUUu01NBWSzQKIjQaUbAxapAEj5g0KtEYRdEIeETjFYRglEDEIBgleIBnrGgjQY5C01SKFmrTi5ZSethjt7vt7o7fmzfb3ens0fqSL7Mz7/3/995/vX8tqqpCG2oA+LcRCPgAC+KNDCJZ/z0MW0o/rLbYEhYrkJgtn+J1gnh8CNhXBLguAFaTmINYSiwjridyiCR9zgXF2QmLcoK/vyd+I8YM0oLCMRO4pwZwZmqfFMOsfxTweScTP0QLrOV0Ifx8ExAWSdBn/UiD6s3hexnxJL/8SbxDfGYgVr3SqvoIIxbarPIhTX0psZ1YAZ+cQnYJMOs2IItPJZFu4S58LqCHJ+n8FehtFLLXcQN7uLqCqCT6pHpSWSyRiA0jj/iBO52nkeYtAkpepoGXTOwK395CUg/N9wdw9WpugtZt+w6ofR3orgfsuJerrtTd0zWZwBqBNIXYr5EKy9z4GnB3NUmXhkhPchOth4FzJ4Fjz+ma7MAcclUcAeY/zpjRvs4nvg6Lh5jEbxPFmi8XbuFJ18MQ5kNNQP37MtycRMM2oL8+NJ9Ajps/ZAg+GyRfQLwRj7iYHJWaQNFjQOFT5m0dfx5wu4HyvTzdMRltR58xr1vwHi1QDs1VwBqiMAqxRTh/DfVYMZNxVfaWWVlnFdC0X/gPSJ8HZJby5PRMC13R8qV5/U2budYholqh7ifCLRci9vYnM5fv0ExcwGBxZBiViOAJ+lOkxxjzfnxYFhyhpWadjPDwkXYtcMWd8tR+7zL43E4z8cDpAnjcsyAKUP4K8+7/+gg4f0rmgQg6Ty/JB6nULb9dbAZObTLLzamQB/W68zDcfJWZ2N2Vq+0skRUmtcAoPNot00QJKwieHoIp6tMrn9hw3bvASKtRNp3V0GYRoWDByLkcM7Ewg9BhI7Et2Shcu4EVuS9UrVT9xN5+efqgplGavuZFo6w9jRu2Sxm/22EmtqeOaCYRvgz4QoK9LMGnd8qAUsPKTgcD7ewu42bEqc9+QZdUG2MjePHY00bMxDNy26lQhYencHeHBEVA+f1m3xU9DZRuCEZtGJGQWctv+uZH2hmElFcsPiTPbjcTp81thsPRDg8FLhyW3/5hnW87FLmw9taxNLJcBgLGa1Ss7aoFGnfoKVgto1qxNSE5v9VM7MgYReo1P2m7b9rNxcJfL0il6iSIb0c3AlWP0hrj5nmhtfZVEbDM733yPb3oG8aOz0ycwNumdP02+iyAjt9Ziw/IPLQ5IyORSIoypxAZxfLUvU2CxY3SV3ZogRvxdkq6vJ7EuxBQH8Hxl4C7fuEKLg54p9KVhNVDEg+dAX5cLoMvgE1IcBjyzEgsAkLFOn4tx2BHLqru56XGpiIlH9MaffT/wVVMtyHBUEfiN0N5F/126iH5aqaGDxfZTHzFy6X586kRBujvhq28VBcy7zsFaT91rRIZPnlptEagmgKVJP8YrvPAzw/yPuZVN/dhdiC3ss2bLe9frfWhzuEW5jXdcuYTZkS91KrAQx0P8NffkQiUGPvfScEU2mSzZpdOcfETTvpvBiuf4xIZwqKCuXg6r35ZyGZzjFMr+TwYTbkSx3hb9PZu68RK0e4MNIfSKohQdyvMKkgPxIy/KXjuA63TDPYTwQ5T0Z9WQ4MyQCyPRzpVYjE+1bvGwRhrOojbo5pX/X/E0LpONjxEm2nGjwbmwBLihFYeI0H1x/CxGpdc/FtYTIg+p0S/FA6hbON9yCzuiSol9GbdECu41Ml5Hmm06H9n9opbmaddiZzFLmQvmlaNCf13kn0Xb5wjUy2PNm2nKg15GYuMM2taxP8JMAC5wMrd7FP1/wAAAABJRU5ErkJggg==';
 const DEIconSchClosure = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAoCAYAAADpE0oSAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYxIDY0LjE0MDk0OSwgMjAxMC8xMi8wNy0xMDo1NzowMSAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNS4xIFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6RTYxOTU5RkJGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6RTYxOTU5RkNGMkQ3MTFFNkI5NERERDM2Qzg4NzcwRUYiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDpFNjE5NTlGOUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDpFNjE5NTlGQUYyRDcxMUU2Qjk0REREMzZDODg3NzBFRiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PuSU594AAAfTSURBVHja5Fh7cJTV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';
@@ -168,9 +167,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         $('span#dot-advisories-power-btn').css({ color });
         for (var i = 0; i < stateLength; i++) {
             state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-            if (W.map.getLayersByName(state + 'DOTLayer').length != "0") {
-                eval(state + 'DOTLayer.setVisibility(' + value + ')');
-            }
+            W.map.getLayersByName(state + 'DOTLayer')[0]?.setVisibility(value);
         }
     }
     function getBounds() {
@@ -191,30 +188,31 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
 
     //Build the State Layers
     function buildDOTAdvLayers(state) {
-        eval(state.substring(0, 2) + 'DOTLayer = new OpenLayers.Layer.Markers("' + state.substring(0, 2) + 'DOTLayer")');
-        W.map.addLayer(eval(state.substring(0, 2) + 'DOTLayer'));
+        const layer = new OpenLayers.Layer.Markers(state.substring(0, 2) + 'DOTLayer');
+        W.map.addLayer(layer);
         //W.map.getOLMap().setLayerIndex(eval(state.substring(0, 2) + 'DOTLayer'), 10);
     }
     function redrawAdvs() {
         for (const property in settings) {
             let state = property.replace("chk", "").replace("DOTEnabled", "");
             if (state.length == 2) {
-                if (document.getElementById('chk' + state + 'DOTEnabled').checked && (W.map.getLayersByName(state + 'DOTLayer').length == 1)) {
-                    eval('W.map.removeLayer(' + state + 'DOTLayer)');
+                const layer = W.map.getLayersByName(state + 'DOTLayer')[0];
+                if (document.getElementById('chk' + state + 'DOTEnabled').checked && layer) {
+                    W.map.removeLayer(layer);
                     buildDOTAdvLayers(state);
-                    eval('testAdv(' + state + 'Feed, config.' + state + ')');
+                    testAdv(feeds[state], config[state]);
                     if (W.map.getZoom() >= 12) {
                         if (document.getElementById('chkDOTHideZoomOut').checked) {
                             if (W.map.getZoom() > document.getElementById('valueHideZoomLevel').value) {
-                                eval(state + 'DOTLayer.setVisibility(true)');
+                                layer.setVisibility(true);
                             } else {
-                                eval(state + 'DOTLayer.setVisibility(false)');
+                                layer.setVisibility(false);
                             }
                         } else {
-                            eval(state + 'DOTLayer.setVisibility(true)');
+                            layer.setVisibility(true);
                         }
                     } else {
-                        eval(state + 'DOTLayer.setVisibility(false)');
+                        layer.setVisibility(false);
                     }
                 }
             }
@@ -222,7 +220,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     function testAdv(resultObj, state) {
         let i = 0;
-        while (i < resultObj.length) {
+        while (i < resultObj?.length) {
             if ((resultObj[i].lon > mapBounds.left) && (resultObj[i].lon < mapBounds.right)) {
                 if ((resultObj[i].lat > mapBounds.bottom) && (resultObj[i].lat < mapBounds.top)) {
                     drawMarkers(resultObj[i]);
@@ -248,8 +246,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     }
     const timer = ms => new Promise(res => setTimeout(res, ms))
     function getAdvisories(state, stateAbv, type) {
-        eval('promises' + stateAbv + ' = []');
-        eval('advisories' + stateAbv + ' = []');
+        promises[stateAbv] = [];
+        advisories[stateAbv] = [];
         let thesepromises = [];
         for (let j = 0; j < state.URL.length; j++) {
             let thispromise = new Promise((resolve, reject) => {
@@ -258,7 +256,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     resultObj = state.data(JSON.parse(result.responseText), j);
                     async function innerLoop() {
                         for (let i = 0; i < resultObj.length; i++) {
-                            if (eval(state.filter(j))) {
+                            const filter = state.filters[j];
+                            if (!filter || filter(resultObj)) {
                                 state.scheme(resultObj[i], j);
                             }
                             if (i == (resultObj.length - 1)) {
@@ -280,8 +279,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         })
     }
     function promiseWorker(stateAbv, type) {
-        let thisadvisory = eval("advisories" + stateAbv);
-        Promise.all(eval('promises' + stateAbv))
+        let thisadvisory = advisories[stateAbv];
+        Promise.all(promises[stateAbv])
             .then(function () {
                 for (let i = 0; i < thisadvisory.length; i++) {
                     if (type == "report") {
@@ -298,7 +297,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         cell4.innerHTML = parms.time;  //Time
                     } else {
                         //drawMarkers(thisadvisory[i]);
-                        eval(thisadvisory[i].state[0] + 'Feed = thisadvisory');
+                        feeds[thisadvisory[i].state[0]] = thisadvisory;
                         testAdv(thisadvisory, state);
                     }
                 }
@@ -322,7 +321,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
     function getReportData(stateAbv, stateName) {
         popupdetails(stateName);
         //if (stateAbv != "NJ") {
-        eval('getAdvisories(config.' + stateAbv + ',"' + stateAbv + '", "report")');
+        getAdvisories(config[stateAbv], stateAbv, "report");
         //} else { getNJDOT("report"); }
     }
 
@@ -366,7 +365,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         } else {
             newMarker.link = '';
         }
-        eval(parms.state[0] + "DOTLayer.addMarker(newMarker)");
+        W.map.getLayersByName(parms.state[0] + "DOTLayer")[0].addMarker(newMarker);
     }
 
     //Draw the endpoint markers
@@ -508,21 +507,22 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         //Set the state checkboxes according to saved settings
         for (var i = 0; i < stateLength; i++) {
             state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-            setChecked('chk' + state + 'DOTEnabled', eval('settings.' + state + 'DOTEnabled'));
+            setChecked('chk' + state + 'DOTEnabled', settings[state + 'DOTEnabled']);
         }
         for (var i = 0; i < document.getElementsByClassName("wmeDOTSettings").length; i++) {
             settingID = document.getElementsByClassName("wmeDOTSettings")[i].id;
             if (document.getElementsByClassName("wmeDOTSettings")[i].type == "checkbox") {
-                setChecked(settingID, eval('settings.' + settingID));
+                setChecked(settingID, settings[settingID]);
             } else if (document.getElementsByClassName("wmeDOTSettings")[i].type == "select-one") {
-                $("#valueHideZoomLevel").val(eval('settings.' + settingID)).change();
+                $("#valueHideZoomLevel").val(settings[settingID]).change();
             }
         }
         //Build the layers for the selected states
         for (var i = 0; i < stateLength; i++) {
             state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
             if (document.getElementById('chk' + state + 'DOTEnabled').checked) {
-                buildDOTAdvLayers(state); eval('getAdvisories(config.' + state + ',"' + state + '")');
+                buildDOTAdvLayers(state);
+                getAdvisories(config[state], state);
                 console.log("enabling" + state);
             }
         }
@@ -542,7 +542,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
         document.getElementsByClassName("reload-button")[0].addEventListener('click', function (e) {
             for (var i = 0; i < stateLength; i++) {
                 state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-                if (document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked) { eval('W.map.removeLayer(' + state + 'DOTLayer)'); }
+                if (document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked) {
+                    W.map.removeLayer(W.map.getLayersByName(state + 'DOTLayer')[0]);
+                }
             }
             initializeSettings();
         });
@@ -553,10 +555,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             saveSettings();
             if (this.checked) {
                 buildDOTAdvLayers(settingName.substring(0, 2));
-                eval('getAdvisories(config.' + settingName.substring(0, 2) + ',' + "settingName.substring(0, 2)" + ')');
+                getAdvisories(config[settingName.substring(0, 2)], settingName.substring(0, 2));
             }
             else {
-                eval('W.map.removeLayer(' + settingName.substring(0, 2) + 'DOTLayer)');
+                W.map.removeLayer(W.map.getLayersByName(settingName.substring(0, 2) + 'DOTLayer')[0]);
             }
         });
     }
@@ -601,16 +603,16 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
             //var localsettings = {};
             for (var i = 0; i < stateLength; i++) {
                 state = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].id.replace("chk", "").replace("DOTEnabled", "");
-                eval('localsettings.' + state + 'DOTEnabled = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked');
+                localsettings[state + 'DOTEnabled'] = document.getElementsByClassName("WMEDOTAdvSettingsCheckbox")[i].checked;
             }
         }
         for (var i = 0; i < document.getElementsByClassName("wmeDOTSettings").length; i++) {
             if (document.getElementsByClassName("wmeDOTSettings")[i].type == "checkbox") {
                 settingID = document.getElementsByClassName("wmeDOTSettings")[i].id;
-                eval('localsettings.' + settingID + ' = document.getElementsByClassName("wmeDOTSettings")[i].checked');
+                localsettings[settingID] = document.getElementsByClassName("wmeDOTSettings")[i].checked;
             } else if (document.getElementsByClassName("wmeDOTSettings")[i].type == "select-one") {
                 settingID = document.getElementsByClassName("wmeDOTSettings")[i].id;
-                eval('localsettings.' + settingID + ' = document.getElementsByClassName("wmeDOTSettings")[i].value');
+                localsettings[settingID] = document.getElementsByClassName("wmeDOTSettings")[i].value;
             }
         }
         localStorage.setItem("WMEDOT_Settings", JSON.stringify(localsettings));
@@ -665,13 +667,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true]; //['(resultObj[i].LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")'];
-                return (filtertext[index]);
-            },
+            filters: [], //['(resultObj[i].LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")'];
             scheme(obj, index) {
-                promisesAK.push(new Promise((resolve, reject) => {
-                    advisoriesAK.push({
+                promises.AK.push(new Promise((resolve, reject) => {
+                    advisories.AK.push({
                         state: ['AK', 'Alaska'],
                         id: obj.ID,
                         popupType: 0,
@@ -694,14 +693,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res, res.features, res.features, res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['((resultObj[i].LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")) || ((resultObj[i].RoadwayName).includes("Road Closed"))', true, true, true];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => ((obj.LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")) || (obj.RoadwayName).includes("Road Closed")
+            ],
             scheme(obj, index) {
 
-                promisesAZ.push(new Promise((resolve, reject) => {
-                    advisoriesAZ.push({
+                promises.AZ.push(new Promise((resolve, reject) => {
+                    advisories.AZ.push({
                         state: ['AZ', 'Arizona'],
                         id: obj.ID,
                         popupType: 0,
@@ -724,13 +722,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['resultObj[i].eventSubType == "closures"'];
-                return (filtertext[index]);
-            },
+            filters: [obj => obj.eventSubType == "closures"],
             scheme(obj, index) {
-                promisesCT.push(new Promise((resolve, reject) => {
-                    advisoriesCT.push({
+                promises.CT.push(new Promise((resolve, reject) => {
+                    advisories.CT.push({
                         state: ['CT', 'Connecticut'],
                         id: obj.ID,
                         popupType: 0,
@@ -755,15 +750,16 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.advisories, res.restrictions, res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true, '(resultObj[i].impactType == "Closure") || ((resultObj[i].impactType == "Restriction") && ((resultObj[i].construction.toUpperCase().includes("AMP CLOS") || (resultObj[i].construction.toUpperCase().includes("ROAD CLOS")))))', true];
-                return (filtertext[index]);
-            },
+            filters: [
+                null,
+                obj => (obj.impactType == "Closure") || ((obj.impactType == "Restriction") && ((obj.construction.toUpperCase().includes("AMP CLOS") || (obj.construction.toUpperCase().includes("ROAD CLOS"))))),
+                null
+            ],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
-                        promisesDE.push(new Promise((resolve, reject) => {
-                            advisoriesDE.push({
+                        promises.DE.push(new Promise((resolve, reject) => {
+                            advisories.DE.push({
                                 state: ['DE', 'Delaware'],
                                 id: obj.id,
                                 popupType: 0,
@@ -788,8 +784,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                                 pubLink = 'https://deldot.gov/About/news/index.shtml?dc=release&id=' + obj.releaseId;
                             }
                         }
-                        promisesDE.push(new Promise((resolve, reject) => {
-                            advisoriesDE.push({
+                        promises.DE.push(new Promise((resolve, reject) => {
+                            advisories.DE.push({
                                 state: ['DE', 'Delaware'],
                                 id: obj.restrictionId,
                                 popupType: 0,
@@ -838,8 +834,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                             var lon = (obj.geometry.paths[0][0][0] / originShift) * 180.0;
                             var lat = (obj.geometry.paths[0][0][1] / originShift) * 180.0;
                             lat = 180.0 / Math.PI * (2.0 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
-                            promisesDE.push(new Promise((resolve, reject) => {
-                                advisoriesDE.push({
+                            promises.DE.push(new Promise((resolve, reject) => {
+                                advisories.DE.push({
                                     state: ['DE', 'Delaware'],
                                     id: obj.attributes.OBJECTID,
                                     popupType: 0,
@@ -864,19 +860,16 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.item2, res.item2, res.item2];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true, true, true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
-                        promisesFL.push(new Promise((resolve, reject) => {
+                        promises.FL.push(new Promise((resolve, reject) => {
                             //setTimeout(function () { resolve() }, 4000);
                             getFeed(config.FL.detailURL[0] + obj.itemId.replace("/ /g", "%20"), async function (result) {
                                 var eventObj = JSON.parse(result.responseText);
                                 if (eventObj.details.detailLang1.eventTypeName == "Closures") {
-                                    advisoriesFL.push({
+                                    advisories.FL.push({
                                         state: ['FL', 'Florida'],
                                         id: eventObj.id.id,
                                         popupType: 0,
@@ -895,12 +888,12 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }));
                         break;
                     case 1:
-                        promisesFL.push(new Promise((resolve, reject) => {
+                        promises.FL.push(new Promise((resolve, reject) => {
                             //setTimeout(function () { resolve() }, 4000);
                             getFeed(config.FL.detailURL[1] + obj.itemId.replace("/ /g", "%20"), async function (result) {
                                 var eventObj = JSON.parse(result.responseText);
                                 if (eventObj.details.detailLang1.eventTypeName == "Closures") {
-                                    advisoriesFL.push({
+                                    advisories.FL.push({
                                         state: ['FL', 'Florida'],
                                         id: eventObj.id.id,
                                         popupType: 0,
@@ -919,12 +912,12 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }));
                         break;
                     case 2:
-                        promisesFL.push(new Promise((resolve, reject) => {
+                        promises.FL.push(new Promise((resolve, reject) => {
                             //setTimeout(function () { resolve() }, 4000);
                             getFeed(config.FL.detailURL[1] + obj.itemId.replace("/ /g", "%20"), async function (result) {
                                 var eventObj = JSON.parse(result.responseText);
                                 if (eventObj.details.detailLang1.eventTypeName == "Closures") {
-                                    advisoriesFL.push({
+                                    advisories.FL.push({
                                         state: ['FL', 'Florida'],
                                         id: eventObj.id.id,
                                         popupType: 0,
@@ -951,18 +944,15 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].IsFullClosure == true)'];
-                return (filtertext[index]);
-            },
+            filters: [obj => (obj.IsFullClosure == true)],
             scheme(obj, index) {
                 let secondLon, secondLat;
                 if ((obj.LongitudeSecondary != 0) && (obj.LatitudeSecondary != 0)) {
                     secondLon = obj.LongitudeSecondary;
                     secondLat = obj.LatitudeSecondary;
                 }
-                promisesGA.push(new Promise((resolve, reject) => {
-                    advisoriesGA.push({
+                promises.GA.push(new Promise((resolve, reject) => {
+                    advisories.GA.push({
                         state: ['GA', 'Georgia'],
                         id: obj.ID,
                         popupType: 0,
@@ -992,17 +982,20 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res[0].data.mapFeaturesQuery.mapFeatures];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['resultObj[i].features[0].properties.icon.url == "/images/tg_closure_critical.svg" || resultObj[i].features[0].properties.icon.url == "/images/tg_closure_routine.svg" || resultObj[i].features[0].properties.icon.url == "/images/tg_crash_routine.svg" || resultObj[i].features[0].properties.icon.url == "/images/tg_warning_urgent.svg" || (resultObj[i].features[0].properties.icon.url == "/images/tg_warning_routine.svg" && resultObj[i].tooltip.toUpperCase().includes("RAMP CLOSE"))'];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => obj.features[0].properties.icon.url == "/images/tg_closure_critical.svg"
+                    || obj.features[0].properties.icon.url == "/images/tg_closure_routine.svg"
+                    || obj.features[0].properties.icon.url == "/images/tg_crash_routine.svg"
+                    || obj.features[0].properties.icon.url == "/images/tg_warning_urgent.svg"
+                    || (obj.features[0].properties.icon.url == "/images/tg_warning_routine.svg" && obj.tooltip.toUpperCase().includes("RAMP CLOSE"))
+            ],
             scheme(obj, index) {
                 let advType = "";
                 if (obj.tooltip.toUpperCase().includes("CONSTRUCTION")) {
                     advType = "Construction";
                 } else { advType = "Incident"; }
-                promisesIA.push(new Promise((resolve, reject) => {
-                    advisoriesIA.push({
+                promises.IA.push(new Promise((resolve, reject) => {
+                    advisories.IA.push({
                         state: ['IA', 'Iowa'],
                         id: obj.features[0].id,
                         popupType: 0,
@@ -1025,15 +1018,12 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.features, res.features, res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true, true, true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
-                        promisesIL.push(new Promise((resolve, reject) => {
-                            advisoriesIL.push({
+                        promises.IL.push(new Promise((resolve, reject) => {
+                            advisories.IL.push({
                                 state: ['IL', 'Illinois'],
                                 id: obj.attributes.OBJECTID,
                                 popupType: 0,
@@ -1061,8 +1051,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         var lat = (obj.geometry.paths[0][0][1] / originShift) * 180.0;
                         lat = 180.0 / Math.PI * (2.0 * Math.atan(Math.exp(lat * Math.PI / 180.0)) - Math.PI / 2.0);
                         if (obj.attributes.SuggestionToMotorist.includes("Closed")) {
-                            promisesIL.push(new Promise((resolve, reject) => {
-                                advisoriesIL.push({
+                            promises.IL.push(new Promise((resolve, reject) => {
+                                advisories.IL.push({
                                     state: ['IL', 'Illinois'],
                                     id: obj.attributes.OBJECTID,
                                     popupType: 0,
@@ -1080,8 +1070,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }
                         break;
                     case 2:
-                        promisesIL.push(new Promise((resolve, reject) => {
-                            advisoriesIL.push({
+                        promises.IL.push(new Promise((resolve, reject) => {
+                            advisories.IL.push({
                                 state: ['IL', 'Illinois'],
                                 id: obj.attributes.OBJECTID,
                                 popupType: 0,
@@ -1106,18 +1096,15 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res[0].data.mapFeaturesQuery.mapFeatures];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
                 let advType = "";
                 if (obj.tooltip.toUpperCase().includes("CONSTRUCTION")) {
                     advType = "Construction";
                 } else { advType = "Incident"; }
                 if (obj.features[0].properties.icon.url == "/images/tg_closure_urgent.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_critical.svg" || obj.features[0].properties.icon.url == "/images/tg_closure_routine.svg" || obj.features[0].properties.icon.url == "/images/tg_crash_routine.svg" || (obj.features[0].properties.icon.url == "/images/tg_warning_routine.svg" && obj.tooltip.toUpperCase().includes("RAMP CLOSE"))) {
-                    promisesIN.push(new Promise((resolve, reject) => {
-                        advisoriesIN.push({
+                    promises.IN.push(new Promise((resolve, reject) => {
+                        advisories.IN.push({
                             state: ['IN', 'Indiana'],
                             id: obj.features[0].id,
                             popupType: 0,
@@ -1141,13 +1128,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].LanesAffected).replace(/ +(?= )/g, "") == ("All Lanes Closed")'];
-                return (filtertext[index]);
-            },
+            filters: [obj => obj.LanesAffected.replace(/ +(?= )/g, "") == ("All Lanes Closed")],
             scheme(obj, index) {
-                promisesLA.push(new Promise((resolve, reject) => {
-                    advisoriesLA.push({
+                promises.LA.push(new Promise((resolve, reject) => {
+                    advisories.LA.push({
                         state: ['LA', 'Louisiana'],
                         id: obj.ID,
                         popupType: 0,
@@ -1170,13 +1154,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
-                promisesMD.push(new Promise((resolve, reject) => {
-                    advisoriesMD.push({
+                promises.MD.push(new Promise((resolve, reject) => {
+                    advisories.MD.push({
                         state: ['MD', 'Maryland'],
                         id: obj.attributes.OBJECTID,
                         popupType: 0,
@@ -1199,15 +1180,12 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res, res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].type == "Total")', true];
-                return (filtertext[index]);
-            },
+            filters: [obj => (obj.type == "Total")],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
-                        promisesMI.push(new Promise((resolve, reject) => {
-                            advisoriesMI.push({
+                        promises.MI.push(new Promise((resolve, reject) => {
+                            advisories.MI.push({
                                 state: ['MI', 'Michigan'],
                                 id: "00",
                                 popupType: 0,
@@ -1224,8 +1202,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                         break;
                     case 1:
-                        promisesMI.push(new Promise((resolve, reject) => {
-                            advisoriesMI.push({
+                        promises.MI.push(new Promise((resolve, reject) => {
+                            advisories.MI.push({
                                 state: ['MI', 'Michigan'],
                                 id: "",
                                 popupType: 0,
@@ -1249,17 +1227,19 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res[0].data.mapFeaturesQuery.mapFeatures];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['resultObj[i].features[0].properties.icon.url == "/images/tg_closure_critical.svg" || resultObj[i].features[0].properties.icon.url == "/images/tg_closure_routine.svg" || resultObj[i].features[0].properties.icon.url == "/images/tg_crash_routine.svg" || (resultObj[i].features[0].properties.icon.url == "/images/tg_warning_routine.svg" && resultObj[i].tooltip.toUpperCase().includes("RAMP CLOSE"))'];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => obj.features[0].properties.icon.url == "/images/tg_closure_critical.svg"
+                    || obj.features[0].properties.icon.url == "/images/tg_closure_routine.svg"
+                    || obj.features[0].properties.icon.url == "/images/tg_crash_routine.svg"
+                    || (obj.features[0].properties.icon.url == "/images/tg_warning_routine.svg" && obj.tooltip.toUpperCase().includes("RAMP CLOSE"))
+            ],
             scheme(obj, index) {
                 let advType = "";
                 if (obj.tooltip.toUpperCase().includes("CONSTRUCTION")) {
                     advType = "Construction";
                 } else { advType = "Incident"; }
-                promisesMN.push(new Promise((resolve, reject) => {
-                    advisoriesMN.push({
+                promises.MN.push(new Promise((resolve, reject) => {
+                    advisories.MN.push({
                         state: ['MN', 'Minnesota'],
                         id: obj.features[0].id,
                         popupType: 0,
@@ -1282,13 +1262,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
-                promisesNC.push(new Promise((resolve, reject) => {
-                    advisoriesNC.push({
+                promises.NC.push(new Promise((resolve, reject) => {
+                    advisories.NC.push({
                         state: ['NC', 'North Carolina'],
                         id: obj.id,
                         popupType: 0,
@@ -1311,18 +1288,15 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.Data.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
-                promisesNJ.push(new Promise((resolve, reject) => {
+                promises.NJ.push(new Promise((resolve, reject) => {
                     //setTimeout(function () { resolve() }, 4000);
                     getFeed(config.NJ.detailURL[0] + obj.properties.EventID, function (result) {
                         var eventObj = JSON.parse(result.responseText).Data;
                         console.log(result.status);
                         if (((eventObj[0].FullText.toUpperCase()).includes("ALL LANES CLOSE") || (eventObj[0].FullText.toUpperCase()).includes("RAMP CLOSE")) && ((eventObj[0].FullText).includes("NYSDOT") != true)) {
-                            advisoriesNJ.push({
+                            advisories.NJ.push({
                                 state: ['NJ', 'New Jersey'],
                                 id: eventObj[0].markerId,
                                 popupType: 0,
@@ -1348,14 +1322,11 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.d];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
-                promisesNV.push(new Promise((resolve, reject) => {
+                promises.NV.push(new Promise((resolve, reject) => {
                     let unix = obj.LastUpdate.replace(/\\\//g, "").replace("/Date(", "").replace(")/", "");
-                    advisoriesNV.push({
+                    advisories.NV.push({
                         state: ['NV', 'Nevada'],
                         id: obj.ID,
                         popupType: 0,
@@ -1378,13 +1349,17 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['((NotNY.includes(resultObj[i].RegionName) == false && resultObj[i].EventType != "transitMode" && resultObj[i].EventSubType != "Capacity related") && (resultObj[i].EventType == "closures" || (resultObj[i].EventType != "closures" && resultObj[i].LanesAffected == "all lanes" && (resultObj[i].LanesStatus == "closed" || resultObj[i].LanesStatus == "blocked"))))'];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => (
+                    (NotNY.includes(obj.RegionName) == false && obj.EventType != "transitMode" && obj.EventSubType != "Capacity related")
+                    && (obj.EventType == "closures" || (
+                        obj.EventType != "closures" && obj.LanesAffected == "all lanes" && (obj.LanesStatus == "closed" || obj.LanesStatus == "blocked")
+                    ))
+                )
+            ],
             scheme(obj, index) {
-                promisesNY.push(new Promise((resolve, reject) => {
-                    advisoriesNY.push({
+                promises.NY.push(new Promise((resolve, reject) => {
+                    advisories.NY.push({
                         state: ['NY', 'New York'],
                         id: obj.ID,
                         popupType: 0,
@@ -1407,13 +1382,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.ConstructionMarkers];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].Status == "Closed")'];
-                return (filtertext[index]);
-            },
+            filters: [obj => obj.Status == "Closed"],
             scheme(obj, index) {
-                promisesOH.push(new Promise((resolve, reject) => {
-                    advisoriesOH.push({
+                promises.OH.push(new Promise((resolve, reject) => {
+                    advisories.OH.push({
                         state: ['OH', 'Ohio'],
                         id: obj.ID,
                         popupType: 0,
@@ -1436,19 +1408,20 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.features, res.features, res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true, 'resultObj[i].attributes.comments.includes("clos")', 'resultObj[i].attributes.tmddOther.includes("clos")'];
-                return (filtertext[index]);
-            },
+            filters: [
+                null,
+                obj => obj.attributes.comments.includes("clos"),
+                obj => obj.attributes.tmddOther.includes("clos")
+            ],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
                         let x, y;
                         var lonlat = obj.geometry.paths[0][0];
-                        promisesOR.push(new Promise((resolve, reject) => {
+                        promises.OR.push(new Promise((resolve, reject) => {
                             x = obj.geometry.paths[0][0].toString().split(",")[0];
                             y = obj.geometry.paths[0][0].toString().split(",")[1];
-                            advisoriesOR.push({
+                            advisories.OR.push({
                                 state: ['OR', 'Oregon'],
                                 id: obj.attributes.OBJECTID,
                                 popupType: 0,
@@ -1465,8 +1438,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                         break;
                     case 1:
-                        promisesOR.push(new Promise((resolve, reject) => {
-                            advisoriesOR.push({
+                        promises.OR.push(new Promise((resolve, reject) => {
+                            advisories.OR.push({
                                 state: ['OR', 'Oregon'],
                                 id: obj.attributes.incidentId,
                                 popupType: 0,
@@ -1483,8 +1456,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }))
                         break;
                     case 2:
-                        promisesOR.push(new Promise((resolve, reject) => {
-                            advisoriesOR.push({
+                        promises.OR.push(new Promise((resolve, reject) => {
+                            advisories.OR.push({
                                 state: ['OR', 'Oregon'],
                                 id: obj.attributes.incidentId,
                                 popupType: 0,
@@ -1508,10 +1481,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res, res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].LaneStatus == "closed") || (resultObj[i].LaneStatus == "ramp closure")', true];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => (resultObj[i].LaneStatus == "closed") || (resultObj[i].LaneStatus == "ramp closure")
+            ],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
@@ -1538,8 +1510,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                             tolon = "";
                             tolat = "";
                         }
-                        promisesPA.push(new Promise((resolve, reject) => {
-                            advisoriesPA.push({
+                        promises.PA.push(new Promise((resolve, reject) => {
+                            advisories.PA.push({
                                 state: ['PA', 'Pennsylvania'],
                                 id: obj.EventID,
                                 popupType: 0,
@@ -1567,9 +1539,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         } else {
                             timing = moment(new Date(obj.attributes.starttime)).format('LLL') + ' to ' + moment(new Date(obj.attributes.endtime)).format('LLL');
                         }
-                        promisesPA.push(new Promise((resolve, reject) => {
+                        promises.PA.push(new Promise((resolve, reject) => {
                             if (obj.attributes.endtime > Date.now()) {
-                                advisoriesPA.push({
+                                advisories.PA.push({
                                     state: ['PA', 'Pennsylvania'],
                                     id: obj.attributes.GlobalID,
                                     popupType: 0,
@@ -1599,21 +1571,18 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.features, res.features, res.features];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true, true, true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
                 switch (index) {
                     case 0:
-                        promisesVA.push(new Promise((resolve, reject) => {
+                        promises.VA.push(new Promise((resolve, reject) => {
                             let lat = obj.geometry.coordinates[1];
                             let lon = obj.geometry.coordinates[0];
                             let thisID = obj.id;
                             getFeed(config.VA.detailURL + obj.id, async function (result) {
                                 var eventObj = JSON.parse(result.responseText);
                                 if (eventObj[thisID].display_text.toLowerCase().includes("all west lanes are closed")) {
-                                    advisoriesVA.push({
+                                    advisories.VA.push({
                                         state: ['VA', 'Virginia'],
                                         id: eventObj[thisID].fid,
                                         popupType: 0,
@@ -1632,13 +1601,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }));
                         break;
                     case 1:
-                        promisesVA.push(new Promise((resolve, reject) => {
+                        promises.VA.push(new Promise((resolve, reject) => {
                             let lat = obj.geometry.coordinates[1];
                             let lon = obj.geometry.coordinates[0];
                             let thisID = obj.id;
                             getFeed(config.VA.detailURL + obj.id, async function (result) {
                                 var eventObj = JSON.parse(result.responseText);
-                                advisoriesVA.push({
+                                advisories.VA.push({
                                     state: ['VA', 'Virginia'],
                                     id: eventObj[thisID].fid,
                                     popupType: 0,
@@ -1656,13 +1625,13 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                         }));
                         break;
                     case 2:
-                        promisesVA.push(new Promise((resolve, reject) => {
+                        promises.VA.push(new Promise((resolve, reject) => {
                             let lat = obj.geometry.coordinates[1];
                             let lon = obj.geometry.coordinates[0];
                             let thisID = obj.id;
                             getFeed(config.VA.detailURL + obj.id, async function (result) {
                                 var eventObj = JSON.parse(result.responseText);
-                                advisoriesVA.push({
+                                advisories.VA.push({
                                     state: ['VA', 'Virginia'],
                                     id: eventObj[thisID].fid,
                                     popupType: 0,
@@ -1688,10 +1657,9 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].EventCategory == "Closure" || resultObj[i].EventCategory == "Construction" || resultObj[i].EventCategory == "Bridge")'];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => (obj.EventCategory == "Closure" || obj.EventCategory == "Construction" || obj.EventCategory == "Bridge")
+            ],
             scheme(obj, index) {
                 let county;
                 if (obj.County == null) {
@@ -1700,8 +1668,8 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     county = obj.County;
                 }
                 let unixtime = parseInt(obj.LastUpdatedTime.replace("/Date(", "").replace(")/", "").split("-")[0]);
-                promisesWA.push(new Promise((resolve, reject) => {
-                    advisoriesWA.push({
+                promises.WA.push(new Promise((resolve, reject) => {
+                    advisories.WA.push({
                         state: ['WA', 'Washington'],
                         id: obj.AlertID,
                         popupType: 0,
@@ -1724,18 +1692,17 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = ['(resultObj[i].EventType == "roadwork" || resultObj[i].EventType == "closures" || resultObj[i].EventType == "accidentsAndIncidents")'];
-                return (filtertext[index]);
-            },
+            filters: [
+                obj => (obj.EventType == "roadwork" || obj.EventType == "closures" || obj.EventType == "accidentsAndIncidents")
+            ],
             scheme(obj, index) {
                 let linkvar = '';
                 let eText = '';
 
                 let addObj = function () {
                     if (obj.PlannedEndDate == null || obj.PlannedEndDate > moment().unix()) {
-                        promisesWI.push(new Promise((resolve, reject) => {
-                            advisoriesWI.push({
+                        promises.WI.push(new Promise((resolve, reject) => {
+                            advisories.WI.push({
                                 state: ['WI', 'Wisconsin'],
                                 id: obj.ID,
                                 popupType: 0,
@@ -1782,13 +1749,10 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 let resultText = [res.changes["com.orci.opentms.web.public511.components.plannedevent.shared.data.PlannedEventBean"].changes];
                 return (resultText[index]);
             },
-            filter(index) {
-                let filtertext = [true];
-                return (filtertext[index]);
-            },
+            filters: [],
             scheme(obj, index) {
-                promisesWV.push(new Promise((resolve, reject) => {
-                    advisoriesWV.push({
+                promises.WV.push(new Promise((resolve, reject) => {
+                    advisories.WV.push({
                         state: ['WV', 'West Virginia'],
                         id: obj.entity.dataGatewayId,
                         popupType: 0,
