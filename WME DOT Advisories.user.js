@@ -1482,7 +1482,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                 return (resultText[index]);
             },
             filters: [
-                obj => (resultObj[i].LaneStatus == "closed") || (resultObj[i].LaneStatus == "ramp closure")
+                obj => (obj.LaneStatus == "closed") || (obj.LaneStatus == "ramp closure")
             ],
             scheme(obj, index) {
                 switch (index) {
