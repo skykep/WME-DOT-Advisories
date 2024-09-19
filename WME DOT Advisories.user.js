@@ -257,7 +257,7 @@ const NJConstruction = ['Construction', 'ScheduledConstruction'];
                     async function innerLoop() {
                         for (let i = 0; i < resultObj.length; i++) {
                             const filter = state.filters[j];
-                            if (!filter || filter(resultObj)) {
+                            if (!filter || filter(resultObj[i])) {
                                 state.scheme(resultObj[i], j);
                             }
                             if (i == (resultObj.length - 1)) {
